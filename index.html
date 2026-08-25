@@ -384,15 +384,18 @@
             border: 1px solid #eee;
             font-size: 14px;
         }
-        .admin-service-item button {
-            background: #dc3545;
+        
+        .admin-service-item .action-btns button {
             color: white;
             border: none;
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 3px;
             cursor: pointer;
             font-weight: bold;
+            margin-left: 5px;
         }
+        .btn-edit { background: var(--primary-navy); }
+        .btn-delete { background: #dc3545; }
 
         .admin-table-container {
             overflow-x: auto;
@@ -548,18 +551,18 @@
     <!-- ADMIN LOGIN -->
     <div id="admin-login">
         <div class="admin-box">
-            <h2 style="color: var(--primary-navy); text-align:center;">Admin Login</h2>
+            <h2 style="color: var(--primary-navy); text-align:center;">Admin Login / Prijava</h2>
             <form onsubmit="loginAdmin(event)">
                 <div class="form-group">
                     <label>Email</label>
                     <input type="email" id="adminEmail" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
+                    <label>Password / Lozinka</label>
                     <input type="password" id="adminPass" class="form-control" required>
                 </div>
-                <button type="submit" class="btn-solid submit-btn">Log ind</button>
-                <button type="button" onclick="showPublicSite()" style="margin-top:10px; width:100%; padding:10px; border:none; background:none; cursor:pointer; color:#666; text-decoration:underline;">Tilbage / Nazad</button>
+                <button type="submit" class="btn-solid submit-btn">Login / Prijava</button>
+                <button type="button" onclick="showPublicSite()" style="margin-top:10px; width:100%; padding:10px; border:none; background:none; cursor:pointer; color:#666; text-decoration:underline;">Back / Nazad</button>
             </form>
         </div>
     </div>
@@ -568,36 +571,36 @@
     <div id="admin-dashboard">
         <div class="admin-topbar">
             <div class="admin-brand">ArFiAnKA ADMIN</div>
-            <a href="#" onclick="logoutAdmin()" style="color: white; text-decoration: none; font-size: 14px;">Log ud</a>
+            <a href="#" onclick="logoutAdmin()" style="color: white; text-decoration: none; font-size: 14px;">Logout / Odjavi se</a>
         </div>
         
         <div class="admin-content">
             <!-- Tabs Navigation -->
             <div class="admin-nav-tabs">
-                <button id="tab-btn-bookings" class="active" onclick="switchAdminTab('bookings')">Bookinger</button>
-                <button id="tab-btn-settings" onclick="switchAdminTab('settings')">Rediger Hjemmeside</button>
+                <button id="tab-btn-bookings" class="active" onclick="switchAdminTab('bookings')">Bookings / Rezervacije</button>
+                <button id="tab-btn-settings" onclick="switchAdminTab('settings')">Edit Website / Uredi sajt</button>
             </div>
             
             <!-- Tab: BOOKINGER -->
             <div id="admin-view-bookings">
                 <div class="admin-header-flex">
-                    <h2>Oversigt over Bookinger</h2>
-                    <p>Her kan du se alle henvendelser.</p>
+                    <h2>Bookings Overview / Pregled rezervacija</h2>
+                    <p>Here you can see all inquiries. / Ovde možete videti sve upite.</p>
                 </div>
                 <div class="admin-card admin-table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Dato</th>
-                                <th>Navn</th>
-                                <th>Telefon</th>
-                                <th>Tjeneste</th>
+                                <th>Date / Datum</th>
+                                <th>Name / Ime</th>
+                                <th>Phone / Telefon</th>
+                                <th>Service / Usluga</th>
                                 <th>Status</th>
-                                <th>Handling</th>
+                                <th>Action / Akcija</th>
                             </tr>
                         </thead>
                         <tbody id="bookingsTableBody">
-                            <tr><td colspan='6' style="text-align:center; padding: 30px; color: #666;">Data hentes...</td></tr>
+                            <tr><td colspan='6' style="text-align:center; padding: 30px; color: #666;">Loading data... / Učitavanje podataka...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -606,65 +609,65 @@
             <!-- Tab: REDIGER HJEMMESIDE -->
             <div id="admin-view-settings" style="display:none;">
                 <div class="admin-header-flex">
-                    <h2>Indstillinger for hjemmeside</h2>
-                    <p>Skift billeder, dropdown-kategorier og tekst direkte herfra.</p>
+                    <h2>Website Settings / Podešavanja sajta</h2>
+                    <p>Change images, dropdown categories, and text directly from here. / Menjajte slike, padajuće menije i tekst direktno odavde.</p>
                 </div>
                 
                 <!-- Rediger Billeder -->
                 <div class="admin-card">
-                    <h3 style="color: var(--primary-navy); margin-top:0;">1. Skift Billeder</h3>
+                    <h3 style="color: var(--primary-navy); margin-top:0;">1. Change Images / Promeni slike</h3>
                     <div class="form-group">
-                        <label>Upload nyt Logo</label>
+                        <label>Upload new Logo / Otpremi novi logo</label>
                         <input type="file" id="uploadLogo" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'logo')">
                     </div>
                     <div class="form-group">
-                        <label>Upload nyt Profilbillede ("Om os")</label>
+                        <label>Upload new Profile Picture / Otpremi novu profilnu sliku</label>
                         <input type="file" id="uploadProfile" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'profile')">
                     </div>
                     <div class="form-group">
-                        <label>Upload ny Baggrund (Forside)</label>
+                        <label>Upload new Background / Otpremi novu pozadinu</label>
                         <input type="file" id="uploadBackground" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'background')">
-                        <small style="color: #666;">Upload det billede du vil bruge, så lægger koden selv det mørkeblå filter hen over.</small>
+                        <small style="color: #666;">Upload the image, the code will apply the dark blue filter. / Otpremite sliku, kod će automatski primeniti tamno plavi filter.</small>
                     </div>
                 </div>
                 
                 <!-- Rediger Om Os -->
                 <div class="admin-card">
-                    <h3 style="color: var(--primary-navy); margin-top:0;">2. Rediger "Om Os" tekst</h3>
+                    <h3 style="color: var(--primary-navy); margin-top:0;">2. Edit "About Us" text / Uredi tekst "O nama"</h3>
                     <div class="form-group">
-                        <label>Navn</label>
+                        <label>Name / Ime</label>
                         <input type="text" id="editAboutName" class="form-control" value="Kristina Ciric Ahmed">
                     </div>
                     <div class="form-group">
-                        <label>Titel / Rolle</label>
+                        <label>Title/Role / Titula</label>
                         <input type="text" id="editAboutRole" class="form-control" value="Direktor, osnivač i ovlašćena medicinska sestra">
                     </div>
                     <div class="form-group">
-                        <label>Beskrivelse (Afsnit 1)</label>
+                        <label>Description (Paragraph 1) / Opis (Pasus 1)</label>
                         <textarea id="editAboutP1" rows="4" class="form-control">Diplomirala na Univerzitetu u Malmeu sa dugogodišnjim iskustvom iz Švedske i Srbije, uključujući Odeljenje torakalne hirurgije (SUS Lund) i Kućnu negu u Helsingborgu.</textarea>
                     </div>
                     <div class="form-group">
-                        <label>Citat / Vision (Afsnit 2)</label>
+                        <label>Quote/Vision (Paragraph 2) / Citat (Pasus 2)</label>
                         <textarea id="editAboutP2" rows="3" class="form-control">"Bilo da je potrebna praktična pomoć ili siguran onlajn sastanak, moj tim i ja osiguravamo da su stariji u apsolutno najboljim rukama sa fokusom na stručnost i toplinu."</textarea>
                     </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="saveAboutText()" class="btn-solid">Gem tekst ændringer</button>
-                        <button onclick="deleteAboutText()" class="btn-solid" style="background-color: #dc3545; border-color: #dc3545;">Slet Om Os tekst</button>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="saveAboutText()" class="btn-solid">Save text changes / Sačuvaj izmene teksta</button>
+                        <button onclick="deleteAboutText()" class="btn-solid" style="background-color: #dc3545; border-color: #dc3545;">Delete About Us text / Obriši tekst 'O nama'</button>
                     </div>
                 </div>
                 
                 <!-- Rediger Dropdown & Priser -->
                 <div class="admin-card">
-                    <h3 style="color: var(--primary-navy); margin-top:0;">3. Rediger Tjenester (Dropdown & Priser)</h3>
-                    <p style="font-size: 14px; margin-bottom: 20px;">De muligheder, du opretter her, vises i drop-down menuen, når kunden skal booke. <em>Bemærk at disse ikke auto-oversættes.</em></p>
+                    <h3 style="color: var(--primary-navy); margin-top:0;">3. Edit Services (Dropdown & Prices) / Uredi usluge (Padajući meni i cene)</h3>
+                    <p style="font-size: 14px; margin-bottom: 20px;">Options created here will appear in the booking dropdown. / Opcije koje ovde kreirate prikazaće se u padajućem meniju za zakazivanje.</p>
                     
                     <ul id="admin-services-list" style="list-style: none; padding: 0; margin-bottom: 20px;">
                         <!-- Listen med kategorier indlæses her af JS -->
                     </ul>
                     
                     <div class="form-group" style="display: flex; gap: 10px;">
-                        <input type="text" id="newServiceInput" class="form-control" placeholder="F.eks. Lægebesøg - 2500 RSD">
-                        <button type="button" onclick="addNewService()" class="btn-solid" style="padding: 10px 20px;">Tilføj</button>
+                        <input type="text" id="newServiceInput" class="form-control" placeholder="E.g. Doctor visit - 2500 RSD / Npr. Poseta lekaru - 2500 RSD">
+                        <button type="button" onclick="addNewService()" class="btn-solid" style="padding: 10px 20px;">Add / Dodaj</button>
                     </div>
                 </div>
 
@@ -722,6 +725,9 @@
                 defaultOption.text = translations[lang]["form_opt_1"];
             }
             
+            // Opdater "Submit" knap tekst
+            document.getElementById('submitBtn').innerText = translations[lang]["form_btn"];
+            
             applyLocalEdits(); 
         }
 
@@ -729,31 +735,26 @@
         // LOCAL CONTENT MANAGEMENT (CMS)
         // ---------------------------------------------------------
         
-        // Standard services hvis admin ikke har lavet sine egne endnu
         let currentServices = ["Onlajn sastanak", "Praktična pomoć", "Lična nega"];
 
         document.addEventListener("DOMContentLoaded", function() {
             applyLocalEdits();
-            // Start med at sætte korrekt "Izaberite..." sprog i dropdown
             const currentLang = document.getElementById('languageSelector').value;
             changeLanguage(currentLang);
         });
         
         function applyLocalEdits() {
-            // Hent logo
             const savedLogo = localStorage.getItem("arfianka_logo");
             if(savedLogo) {
                 document.getElementById('site-logo').src = savedLogo;
                 document.getElementById('footer-logo').src = savedLogo;
             }
             
-            // Hent profilbillede
             const savedProfile = localStorage.getItem("arfianka_profile");
             if(savedProfile) {
                 document.getElementById('site-profile-pic').style.backgroundImage = `url(${savedProfile})`;
             }
 
-            // Hent baggrundsbillede
             const savedBackground = localStorage.getItem("arfianka_background");
             const heroEl = document.getElementById('forside');
             if(savedBackground) {
@@ -762,7 +763,6 @@
                 heroEl.style.background = `radial-gradient(circle at center, rgba(195, 154, 92, 0.2) 0%, rgba(13, 44, 84, 0.85) 60%, #0d2c54 100%)`;
             }
             
-            // Hent "Om os" tekster
             const aboutName = localStorage.getItem("arfianka_about_name");
             const aboutRole = localStorage.getItem("arfianka_about_role");
             const aboutP1 = localStorage.getItem("arfianka_about_p1");
@@ -791,7 +791,6 @@
                 }
             }
             
-            // Hent Dynamiske Tjenester (Dropdown muligheder)
             const savedServicesJSON = localStorage.getItem("arfianka_services");
             if(savedServicesJSON) {
                 currentServices = JSON.parse(savedServicesJSON);
@@ -801,7 +800,6 @@
             renderClientDropdown();
         }
 
-        // Håndtering af billeder
         function handleImageUpload(event, type) {
             const file = event.target.files[0];
             if(!file) return;
@@ -811,20 +809,19 @@
                 const base64Image = e.target.result;
                 if (type === 'logo') {
                     localStorage.setItem("arfianka_logo", base64Image);
-                    alert("Logo er opdateret!");
+                    alert("Logo updated! / Logo je ažuriran!");
                 } else if (type === 'profile') {
                     localStorage.setItem("arfianka_profile", base64Image);
-                    alert("Profilbillede er opdateret!");
+                    alert("Profile picture updated! / Profilna slika je ažurirana!");
                 } else if (type === 'background') {
                     localStorage.setItem("arfianka_background", base64Image);
-                    alert("Baggrundsbillede er opdateret!");
+                    alert("Background image updated! / Pozadinska slika je ažurirana!");
                 }
                 applyLocalEdits(); 
             };
             reader.readAsDataURL(file);
         }
         
-        // Håndtering af "Om os" tekst
         function saveAboutText() {
             const name = document.getElementById('editAboutName').value;
             const role = document.getElementById('editAboutRole').value;
@@ -838,14 +835,14 @@
             localStorage.setItem("arfianka_about_deleted", "false"); 
             
             applyLocalEdits();
-            alert("Tekst er gemt og opdateret på hjemmesiden!");
+            alert("Text saved and updated! / Tekst je sačuvan i ažuriran!");
         }
         
         function deleteAboutText() {
-            if(confirm("Er du sikker på du vil slette 'Om os' sektionen fra hjemmesiden?")) {
+            if(confirm("Delete 'About Us' section? / Da li ste sigurni da želite da obrišete sekciju 'O nama'?")) {
                 localStorage.setItem("arfianka_about_deleted", "true");
                 applyLocalEdits();
-                alert("Sektionen er nu skjult.");
+                alert("The section is now hidden. / Sekcija je sada skrivena.");
             }
         }
         
@@ -858,7 +855,7 @@
             listEl.innerHTML = '';
             
             if(currentServices.length === 0) {
-                listEl.innerHTML = '<li style="color:#666; font-style:italic;">Ingen muligheder oprettet. Tilføj en herunder.</li>';
+                listEl.innerHTML = '<li style="color:#666; font-style:italic;">No options created. Add one below. / Nema kreiranih opcija. Dodajte jednu ispod.</li>';
                 return;
             }
             
@@ -867,7 +864,10 @@
                 li.className = 'admin-service-item';
                 li.innerHTML = `
                     <span>${service}</span>
-                    <button onclick="deleteService(${index})">Slet</button>
+                    <div class="action-btns">
+                        <button class="btn-edit" onclick="editService(${index})">Edit / Uredi</button>
+                        <button class="btn-delete" onclick="deleteService(${index})">Delete / Obriši</button>
+                    </div>
                 `;
                 listEl.appendChild(li);
             });
@@ -875,15 +875,11 @@
         
         function renderClientDropdown() {
             const selectEl = document.getElementById('service');
-            
-            // Gem nuværende oversættelse for "Vælg..."
             const currentLang = document.getElementById('languageSelector').value;
             const selectPlaceholder = translations[currentLang]["form_opt_1"] || "Izaberite...";
             
-            // Nulstil dropdown og sæt den første "Vælg..." mulighed ind
             selectEl.innerHTML = `<option value="">${selectPlaceholder}</option>`;
             
-            // Indsæt de dynamiske muligheder
             currentServices.forEach(service => {
                 const opt = document.createElement('option');
                 opt.value = service;
@@ -899,15 +895,24 @@
             if(newService !== '') {
                 currentServices.push(newService);
                 localStorage.setItem("arfianka_services", JSON.stringify(currentServices));
-                inputEl.value = ''; // Ryd input felt
+                inputEl.value = '';
                 applyLocalEdits();
             } else {
-                alert("Skriv venligst et navn på tjenesten/kategorien.");
+                alert("Please enter a service name. / Molimo unesite naziv usluge.");
+            }
+        }
+        
+        function editService(index) {
+            const newValue = prompt("Edit service / Uredi uslugu:", currentServices[index]);
+            if (newValue !== null && newValue.trim() !== '') {
+                currentServices[index] = newValue.trim();
+                localStorage.setItem("arfianka_services", JSON.stringify(currentServices));
+                applyLocalEdits();
             }
         }
         
         function deleteService(index) {
-            if(confirm("Vil du flette denne mulighed?")) {
+            if(confirm("Delete this option? / Da li želite da obrišete ovu opciju?")) {
                 currentServices.splice(index, 1);
                 localStorage.setItem("arfianka_services", JSON.stringify(currentServices));
                 applyLocalEdits();
@@ -932,7 +937,7 @@
             db = firebase.firestore();
             auth = firebase.auth();
         } else {
-            console.warn("Firebase er ikke konfigureret endnu. Hjemmesiden vil virke i 'demo-mode'.");
+            console.warn("Firebase is not configured. The site will run in demo-mode. / Firebase nije konfigurisan. Sajt radi u demo modu.");
         }
 
         // ---------------------------------------------------------
@@ -985,29 +990,34 @@
             event.preventDefault();
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
+            btn.innerText = "Sending... / Slanje...";
 
             const bookingData = {
                 navn: document.getElementById('name').value,
                 telefon: document.getElementById('phone').value,
                 tjeneste: document.getElementById('service').value,
                 besked: document.getElementById('message').value,
-                status: "Ny",
+                status: "New / Novo",
                 dato: new Date().toISOString()
             };
 
             if(db) {
                 try {
                     await db.collection("bookings").add(bookingData);
-                    alert("Tak for din henvendelse! Vi kontakter dig snarest.");
+                    alert("Thank you! We will contact you shortly. / Hvala na upitu! Kontaktiraćemo vas uskoro.");
                     event.target.reset();
                 } catch (error) {
-                    alert("Der skete en fejl: " + error.message);
+                    alert("Error / Greška: " + error.message);
                 }
             } else {
-                alert("DEMO-MODE: Booking registreret!");
+                alert("DEMO-MODE: Booking registered! / Rezervacija je zabeležena!");
                 event.target.reset();
             }
             btn.disabled = false;
+            
+            // Sæt den korrekte oversatte tekst tilbage på knappen
+            const currentLang = document.getElementById('languageSelector').value;
+            btn.innerText = translations[currentLang]["form_btn"];
         }
 
         async function loginAdmin(event) {
@@ -1020,13 +1030,13 @@
                     await auth.signInWithEmailAndPassword(email, pass);
                     showAdminDashboard();
                 } catch(error) {
-                    alert("Forkert email eller adgangskode.");
+                    alert("Wrong email or password. / Pogrešna e-adresa ili lozinka.");
                 }
             } else {
                 if(email === "admin@arfianka.se" && pass === "Aria-26") {
                     showAdminDashboard();
                 } else {
-                    alert("Forkert login. Demo login er: admin@arfianka.se / Aria-26");
+                    alert("Wrong login. / Pogrešna prijava. Demo: admin@arfianka.se / Aria-26");
                 }
             }
         }
@@ -1041,34 +1051,36 @@
             if(db) {
                 db.collection("bookings").orderBy("dato", "desc").onSnapshot((snapshot) => {
                     tbody.innerHTML = "";
-                    if(snapshot.empty) tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Ingen bookinger.</td></tr>";
+                    if(snapshot.empty) tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No bookings. / Nema rezervacija.</td></tr>";
                     snapshot.forEach((doc) => renderTableRow(doc.id, doc.data(), tbody));
                 });
             } else {
                 setTimeout(() => {
                     tbody.innerHTML = "";
-                    renderTableRow("demo1", { dato: new Date().toISOString(), navn: "Jovan", telefon: "060123456", tjeneste: currentServices[0] || "Ukendt", status: "Ny" }, tbody);
+                    renderTableRow("demo1", { dato: new Date().toISOString(), navn: "Jovan", telefon: "060123456", tjeneste: currentServices[0] || "Unknown / Nepoznato", status: "New / Novo" }, tbody);
                 }, 1000);
             }
         }
 
         function renderTableRow(id, data, tbody) {
             const tr = document.createElement('tr');
-            const dateStr = new Date(data.dato).toLocaleDateString('da-DK', {day: '2-digit', month: 'short', hour:'2-digit', minute:'2-digit'});
-            const badgeClass = data.status === "Ny" ? "status-ny" : "status-lost";
+            // Formaterer dato pænt (eks. 25-Aug 14:30)
+            const dateStr = new Date(data.dato).toLocaleDateString('en-GB', {day: '2-digit', month: 'short', hour:'2-digit', minute:'2-digit'});
+            
+            const badgeClass = data.status.includes("New") || data.status.includes("Novo") ? "status-ny" : "status-lost";
             tr.innerHTML = `
                 <td>${dateStr}</td><td>${data.navn}</td><td>${data.telefon}</td><td>${data.tjeneste}</td>
                 <td><span class="status-badge ${badgeClass}">${data.status}</span></td>
-                <td>${data.status === "Ny" ? `<button onclick="markAsDone('${id}')" style="background:var(--primary-navy); color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Løst</button>` : 'Løst'}</td>
+                <td>${data.status.includes("New") || data.status.includes("Novo") ? `<button onclick="markAsDone('${id}')" style="background:var(--primary-navy); color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Resolved / Rešeno</button>` : 'Resolved / Rešeno'}</td>
             `;
             tbody.appendChild(tr);
         }
 
         async function markAsDone(id) {
             if(db) {
-                await db.collection("bookings").doc(id).update({ status: "Løst" });
+                await db.collection("bookings").doc(id).update({ status: "Resolved / Rešeno" });
             } else {
-                alert("Status opdateret (demo mode)");
+                alert("Status updated / Status je ažuriran (demo mode)");
                 showAdminDashboard();
             }
         }
