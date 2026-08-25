@@ -72,6 +72,7 @@
             padding: 10px 25px;
             border-radius: 30px;
             border: 2px solid white;
+            cursor: pointer;
         }
         
         .btn-outline:hover {
@@ -123,6 +124,7 @@
             letter-spacing: 1px;
             border: 2px solid var(--primary-gold);
             transition: 0.3s;
+            cursor: pointer;
         }
 
         .btn-solid:hover {
@@ -236,6 +238,7 @@
 
         .form-group {
             margin-bottom: 20px;
+            text-align: left;
         }
 
         .form-group label {
@@ -263,6 +266,33 @@
         .submit-btn {
             width: 100%;
             margin-top: 10px;
+        }
+
+        /* Login Modal */
+        #login-modal {
+            display: none; 
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            background: rgba(13, 44, 84, 0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-box {
+            background: white;
+            padding: 50px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .login-box h2 {
+            color: var(--primary-navy);
+            margin-top: 0;
+            margin-bottom: 20px;
         }
 
         /* Admin Dashboard (Hidden by default) */
@@ -303,15 +333,6 @@
             color: white;
             font-weight: 600;
         }
-        
-        .status-badge {
-            background: #ffeeba;
-            color: #856404;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
 
         /* Footer */
         footer {
@@ -325,7 +346,7 @@
         @media (max-width: 768px) {
             .about-container { flex-direction: column; }
             .about-image { min-height: 300px; }
-            .nav-links { display: none; /* Simplification for mobile in this demo */ }
+            .nav-links { display: none; }
             .hero h1 { font-size: 2.5rem; }
         }
     </style>
@@ -336,7 +357,6 @@
     <div id="public-site">
         <nav class="navbar">
             <div class="navbar-brand">
-                <!-- Using the provided logo -->
                 <img src="6768.jpg" alt="ArFiAnKA Logo">
             </div>
             <div class="nav-links">
@@ -344,7 +364,7 @@
                 <a href="#tjenester">Tjenester</a>
                 <a href="#om-os">Om Os</a>
                 <a href="#book" class="btn-outline">Book Møde</a>
-                <a href="#" onclick="toggleAdmin()" style="color: var(--primary-gold);">Admin Adgang</a>
+                <a onclick="showLoginModal()" style="color: var(--primary-gold); cursor: pointer;">Admin Adgang</a>
             </div>
         </nav>
 
@@ -393,9 +413,9 @@
             <h2 class="section-title">Book et online møde eller hjælp</h2>
             <div class="booking-form">
                 <p style="text-align: center; margin-bottom: 30px; color: #666;">Udfyld formularen herunder, så kontakter vi dig hurtigst muligt for at bekræfte aftalen. <strong>Du behøver ikke at logge ind.</strong></p>
-                <form onsubmit="submitForm(event)">
+                <form id="bookingForm" onsubmit="window.submitForm(event)">
                     <div class="form-group">
-                        <label for="name">Fulde Navn (på dig eller den ældre)</label>
+                        <label for="name">Fulde Navn</label>
                         <input type="text" id="name" class="form-control" required placeholder="F.eks. Jens Jensen">
                     </div>
                     <div class="form-group">
@@ -428,6 +448,25 @@
         </footer>
     </div>
 
+    <!-- Login Modal -->
+    <div id="login-modal">
+        <div class="login-box">
+            <h2>Admin Login</h2>
+            <form onsubmit="window.loginAdmin(event)">
+                <div class="form-group">
+                    <label for="admin-user">Brugernavn</label>
+                    <input type="text" id="admin-user" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="admin-pass">Adgangskode</label>
+                    <input type="password" id="admin-pass" class="form-control" required>
+                </div>
+                <button type="submit" class="btn-solid submit-btn">Log ind</button>
+                <button type="button" class="btn-outline submit-btn" style="color: var(--primary-navy); border-color: var(--primary-navy); margin-top: 10px;" onclick="closeLoginModal()">Annuller</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Admin Dashboard -->
     <div id="admin-dashboard">
         <nav class="navbar">
@@ -435,45 +474,30 @@
                 <span style="color: white; font-family: 'Playfair Display'; font-size: 24px; font-weight: bold;">ArFiAnKA ADMIN</span>
             </div>
             <div class="nav-links">
-                <a href="#" onclick="toggleAdmin()">Tilbage til Hjemmeside</a>
+                <a onclick="logoutAdmin()" style="cursor: pointer;">Log ud</a>
             </div>
         </nav>
 
         <div style="max-width: 1200px; margin: 0 auto;">
             <div class="admin-header">
-                <h2 style="color: var(--primary-navy); margin: 0;">Oversigt over Bookinger & Forespørgsler</h2>
-                <button class="btn-solid" style="padding: 10px 20px; font-size: 12px;" onclick="alert('Opdaterer liste...')">Opdater Liste</button>
+                <h2 style="color: var(--primary-navy); margin: 0;">Oversigt over Bookinger fra Firebase</h2>
+                <p>Nye bookinger vil dukke op her, når du kobler Firebase til at læse data i fremtiden.</p>
             </div>
 
             <div class="admin-table-container">
                 <table id="bookings-table">
                     <thead>
                         <tr>
-                            <th>Dato Modtaget</th>
+                            <th>Dato</th>
                             <th>Navn</th>
                             <th>Telefon</th>
                             <th>Tjeneste</th>
                             <th>Status</th>
-                            <th>Handling</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Dummy Data -->
                         <tr>
-                            <td>25. Aug 2026</td>
-                            <td>Kirsten Hansen</td>
-                            <td>+45 12 34 56 78</td>
-                            <td>Online Møde</td>
-                            <td><span class="status-badge">Afventer Opkald</span></td>
-                            <td><button style="cursor:pointer; padding:5px 10px; background:var(--primary-navy); color:white; border:none; border-radius:3px;">Marker som løst</button></td>
-                        </tr>
-                        <tr>
-                            <td>24. Aug 2026</td>
-                            <td>Søren Poulsen (Pårørende)</td>
-                            <td>+45 87 65 43 21</td>
-                            <td>Praktisk Hjælp</td>
-                            <td><span class="status-badge" style="background:#d4edda; color:#155724;">Aftale Bekræftet</span></td>
-                            <td><button style="cursor:pointer; padding:5px 10px; background:var(--primary-navy); color:white; border:none; border-radius:3px;">Se detaljer</button></td>
+                            <td colspan="5" style="text-align: center; color: #666;">Data hentes fra Firebase... (kræver yderligere opsætning af "getDocs")</td>
                         </tr>
                     </tbody>
                 </table>
@@ -481,52 +505,92 @@
         </div>
     </div>
 
-    <!-- JavaScript for funktionalitet -->
-    <script>
-        // Skift mellem kunde-side og admin-side
-        function toggleAdmin() {
-            const publicSite = document.getElementById('public-site');
-            const adminDash = document.getElementById('admin-dashboard');
-            
-            if (publicSite.style.display === 'none') {
-                publicSite.style.display = 'block';
-                adminDash.style.display = 'none';
-                window.scrollTo(0,0);
-            } else {
-                publicSite.style.display = 'none';
-                adminDash.style.display = 'block';
-                window.scrollTo(0,0);
-            }
-        }
+    <!-- Firebase og Login Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Håndtering af formular submission
-        function submitForm(event) {
-            event.preventDefault(); // Forhindrer at siden genindlæser
-            
-            // Hent data fra formularen
+        // Firebase Konfiguration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeKIZcW1Mvi4lYvaKRMOWdKk3ikFXwEAU",
+            authDomain: "huah-198fc.firebaseapp.com",
+            projectId: "huah-198fc",
+            storageBucket: "huah-198fc.firebasestorage.app",
+            messagingSenderId: "276648968284",
+            appId: "1:276648968284:web:029616d17546aa7d662699",
+            measurementId: "G-J8V7DB0DF7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Booking funktion
+        window.submitForm = async function(event) {
+            event.preventDefault();
+
             const name = document.getElementById('name').value;
             const phone = document.getElementById('phone').value;
             const service = document.getElementById('service').value;
+            const message = document.getElementById('message').value;
             
-            // Simuler at data sendes og gemmes i admin panelet
-            const table = document.getElementById('bookings-table').getElementsByTagName('tbody')[0];
-            const newRow = table.insertRow(0); // Indsæt i toppen
-            
-            const today = new Date().toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' });
-            
-            newRow.innerHTML = `
-                <td>${today}</td>
-                <td>${name}</td>
-                <td>${phone}</td>
-                <td>${service}</td>
-                <td><span class="status-badge" style="background:#f8d7da; color:#721c24;">NY!</span></td>
-                <td><button style="cursor:pointer; padding:5px 10px; background:var(--primary-navy); color:white; border:none; border-radius:3px;">Behandl</button></td>
-            `;
-            
-            // Vis succesbesked til brugeren og ryd formen
-            alert(`Tak ${name}! Din anmodning om "${service}" er modtaget. Vi kontakter dig på ${phone} snarest.`);
-            event.target.reset();
-        }
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            submitBtn.innerText = "Sender...";
+            submitBtn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "bookings"), {
+                    navn: name,
+                    telefon: phone,
+                    tjeneste: service,
+                    besked: message,
+                    dato: new Date().toISOString(),
+                    status: "NY"
+                });
+
+                alert(`Tak ${name}! Din anmodning er modtaget.`);
+                event.target.reset();
+            } catch (e) {
+                console.error("Fejl:", e);
+                alert("Der skete en fejl. Tjek din Firebase database opsætning.");
+            } finally {
+                submitBtn.innerText = "Send Forespørgsel";
+                submitBtn.disabled = false;
+            }
+        };
+
+        // Login funktioner
+        window.showLoginModal = function() {
+            document.getElementById('login-modal').style.display = 'flex';
+        };
+
+        window.closeLoginModal = function() {
+            document.getElementById('login-modal').style.display = 'none';
+        };
+
+        window.loginAdmin = function(event) {
+            event.preventDefault();
+            const user = document.getElementById('admin-user').value;
+            const pass = document.getElementById('admin-pass').value;
+
+            if (user === 'admin' && pass === 'Aria26') {
+                document.getElementById('login-modal').style.display = 'none';
+                document.getElementById('public-site').style.display = 'none';
+                document.getElementById('admin-dashboard').style.display = 'block';
+                window.scrollTo(0,0);
+                
+                // Nulstil felter
+                document.getElementById('admin-user').value = '';
+                document.getElementById('admin-pass').value = '';
+            } else {
+                alert('Forkert brugernavn eller adgangskode!');
+            }
+        };
+
+        window.logoutAdmin = function() {
+            document.getElementById('admin-dashboard').style.display = 'none';
+            document.getElementById('public-site').style.display = 'block';
+            window.scrollTo(0,0);
+        };
     </script>
 </body>
 </html>
