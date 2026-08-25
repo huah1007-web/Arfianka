@@ -51,6 +51,7 @@
         .navbar-brand img {
             height: 50px;
             border-radius: 5px;
+            object-fit: contain;
         }
         
         .nav-right {
@@ -265,6 +266,12 @@
         .form-group {
             margin-bottom: 20px;
         }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
 
         .form-control {
             width: 100%;
@@ -310,6 +317,27 @@
             margin: 40px auto;
             padding: 0 20px;
         }
+        
+        .admin-nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .admin-nav-tabs button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #ddd;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        
+        .admin-nav-tabs button.active {
+            background-color: var(--primary-gold);
+            color: white;
+        }
 
         .admin-header-flex {
             display: flex;
@@ -334,12 +362,16 @@
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-
-        .admin-table-container {
+        
+        .admin-card {
             background: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .admin-table-container {
             overflow-x: auto;
         }
 
@@ -395,7 +427,7 @@
     <div id="public-site">
         <nav class="navbar">
             <div class="navbar-brand">
-                <img src="a3b1c038-c74c-49f8-801e-e018737ac673.jpg" alt="ArFiAnKA Logo">
+                <img src="a3b1c038-c74c-49f8-801e-e018737ac673.jpg" alt="ArFiAnKA Logo" id="site-logo">
             </div>
             <div class="nav-right">
                 <select class="lang-select" onchange="changeLanguage(this.value)">
@@ -443,12 +475,12 @@
         <section id="om-os" class="section" style="background-color: var(--bg-light);">
             <h2 class="section-title" data-i18n="about_title">Upoznajte našeg direktora</h2>
             <div class="about-container">
-                <div class="about-image"></div>
+                <div class="about-image" id="site-profile-pic"></div>
                 <div class="about-content">
-                    <h2>Kristina Ciric Ahmed</h2>
-                    <div class="title-gold" data-i18n="about_role">Direktor, osnivač i ovlašćena medicinska sestra</div>
-                    <p data-i18n="about_p1">Diplomirala na Univerzitetu u Malmeu sa dugogodišnjim iskustvom iz Švedske i Srbije, uključujući Odeljenje torakalne hirurgije (SUS Lund) i Kućnu negu u Helsingborgu.</p>
-                    <p><em data-i18n="about_p2">"Bilo da je potrebna praktična pomoć ili siguran onlajn sastanak, moj tim i ja osiguravamo da su stariji u apsolutno najboljim rukama sa fokusom na stručnost i toplinu."</em></p>
+                    <h2 id="about-name">Kristina Ciric Ahmed</h2>
+                    <div class="title-gold" data-i18n="about_role" id="about-role">Direktor, osnivač i ovlašćena medicinska sestra</div>
+                    <p data-i18n="about_p1" id="about-p1">Diplomirala na Univerzitetu u Malmeu sa dugogodišnjim iskustvom iz Švedske i Srbije, uključujući Odeljenje torakalne hirurgije (SUS Lund) i Kućnu negu u Helsingborgu.</p>
+                    <p><em data-i18n="about_p2" id="about-p2">"Bilo da je potrebna praktična pomoć ili siguran onlajn sastanak, moj tim i ja osiguravamo da su stariji u apsolutno najboljim rukama sa fokusom na stručnost i toplinu."</em></p>
                 </div>
             </div>
         </section>
@@ -485,7 +517,7 @@
         </section>
 
         <footer style="background:#081a33; color:white; text-align:center; padding:30px 20px;">
-            <img src="a3b1c038-c74c-49f8-801e-e018737ac673.jpg" alt="Logo" style="height: 40px; border-radius:5px; margin-bottom:10px;">
+            <img src="a3b1c038-c74c-49f8-801e-e018737ac673.jpg" alt="Logo" id="footer-logo" style="height: 40px; border-radius:5px; margin-bottom:10px; object-fit: contain;">
             <p style="font-size: 14px;">ArFiAnKA - Kućna nega i pomoć starijima &copy; 2026</p>
         </footer>
     </div>
@@ -497,11 +529,11 @@
             <form onsubmit="loginAdmin(event)">
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" id="adminEmail" class="form-control" required>
+                    <input type="email" id="adminEmail" class="form-control" required placeholder="admin@arfianka.se">
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" id="adminPass" class="form-control" required>
+                    <input type="password" id="adminPass" class="form-control" required placeholder="Aria-26">
                 </div>
                 <button type="submit" class="btn-solid submit-btn">Log ind</button>
                 <button type="button" onclick="showPublicSite()" style="margin-top:10px; width:100%; padding:10px; border:none; background:none; cursor:pointer; color:#666; text-decoration:underline;">Tilbage / Nazad</button>
@@ -515,27 +547,84 @@
             <div class="admin-brand">ArFiAnKA ADMIN</div>
             <a href="#" onclick="logoutAdmin()" style="color: white; text-decoration: none; font-size: 14px;">Log ud</a>
         </div>
+        
         <div class="admin-content">
-            <div class="admin-header-flex">
-                <h2>Oversigt over Bookinger fra Firebase</h2>
-                <p>Nye bookinger vil dukke op her, når du kobler Firebase til.</p>
+            <!-- Tabs Navigation -->
+            <div class="admin-nav-tabs">
+                <button id="tab-btn-bookings" class="active" onclick="switchAdminTab('bookings')">Bookinger</button>
+                <button id="tab-btn-settings" onclick="switchAdminTab('settings')">Rediger Hjemmeside</button>
             </div>
-            <div class="admin-table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Dato</th>
-                            <th>Navn</th>
-                            <th>Telefon</th>
-                            <th>Tjeneste</th>
-                            <th>Status</th>
-                            <th>Handling</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bookingsTableBody">
-                        <tr><td colspan='6' style="text-align:center; padding: 30px; color: #666;">Data hentes...</td></tr>
-                    </tbody>
-                </table>
+            
+            <!-- Tab: BOOKINGER -->
+            <div id="admin-view-bookings">
+                <div class="admin-header-flex">
+                    <h2>Oversigt over Bookinger</h2>
+                    <p>Her kan du se alle henvendelser.</p>
+                </div>
+                <div class="admin-card admin-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Dato</th>
+                                <th>Navn</th>
+                                <th>Telefon</th>
+                                <th>Tjeneste</th>
+                                <th>Status</th>
+                                <th>Handling</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTableBody">
+                            <tr><td colspan='6' style="text-align:center; padding: 30px; color: #666;">Data hentes...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Tab: REDIGER HJEMMESIDE -->
+            <div id="admin-view-settings" style="display:none;">
+                <div class="admin-header-flex">
+                    <h2>Indstillinger for hjemmeside</h2>
+                    <p>Skift billeder og tekst direkte herfra.</p>
+                </div>
+                
+                <!-- Rediger Billeder -->
+                <div class="admin-card">
+                    <h3 style="color: var(--primary-navy); margin-top:0;">1. Skift Billeder (Logo & Profil)</h3>
+                    <div class="form-group">
+                        <label>Upload nyt Logo</label>
+                        <input type="file" id="uploadLogo" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'logo')">
+                    </div>
+                    <div class="form-group">
+                        <label>Upload nyt Profilbillede ("Om os")</label>
+                        <input type="file" id="uploadProfile" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'profile')">
+                    </div>
+                </div>
+                
+                <!-- Rediger Om Os -->
+                <div class="admin-card">
+                    <h3 style="color: var(--primary-navy); margin-top:0;">2. Rediger "Om Os" tekst</h3>
+                    <div class="form-group">
+                        <label>Navn</label>
+                        <input type="text" id="editAboutName" class="form-control" value="Kristina Ciric Ahmed">
+                    </div>
+                    <div class="form-group">
+                        <label>Titel / Rolle</label>
+                        <input type="text" id="editAboutRole" class="form-control" value="Direktor, osnivač i ovlašćena medicinska sestra">
+                    </div>
+                    <div class="form-group">
+                        <label>Beskrivelse (Afsnit 1)</label>
+                        <textarea id="editAboutP1" rows="4" class="form-control">Diplomirala na Univerzitetu u Malmeu sa dugogodišnjim iskustvom iz Švedske i Srbije, uključujući Odeljenje torakalne hirurgije (SUS Lund) i Kućnu negu u Helsingborgu.</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Citat / Vision (Afsnit 2)</label>
+                        <textarea id="editAboutP2" rows="3" class="form-control">"Bilo da je potrebna praktična pomoć ili siguran onlajn sastanak, moj tim i ja osiguravamo da su stariji u apsolutno najboljim rukama sa fokusom na stručnost i toplinu."</textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="saveAboutText()" class="btn-solid">Gem tekst ændringer</button>
+                        <button onclick="deleteAboutText()" class="btn-solid" style="background-color: #dc3545; border-color: #dc3545;">Slet Om Os tekst</button>
+                    </div>
+                </div>
+                
             </div>
         </div>
     </div>
@@ -553,9 +642,7 @@
                 srv_1_title: "Online Safety Meeting", srv_1_desc: "A conversation via computer/tablet about health, well-being, or practical challenges.",
                 srv_2_title: "Practical & Personal Care", srv_2_desc: "Help with shopping, cooking, and personal hygiene with respect and dignity.",
                 srv_3_title: "Health Counseling", srv_3_desc: "Authorized assessment, medication management, and dialogue with the municipality/doctor.",
-                about_title: "Meet our CEO", about_role: "CEO, Founder & Registered Nurse",
-                about_p1: "Graduated from Malmö University with many years of experience from both Sweden and Serbia, including the Thoracic Surgery Department (SUS Lund) and Home Care in Helsingborg.",
-                about_p2: "\"Whether practical help or a safe online meeting is needed, my team and I ensure that the elderly are in the absolute best hands with professionalism and warmth in focus.\"",
+                about_title: "Meet our CEO", 
                 book_title: "Book an online meeting / help", book_sub: "No login required. Fill out the form, and we will call you back.",
                 form_name: "Full Name", form_phone: "Phone Number", form_subject: "What is this regarding?",
                 form_opt_1: "Select...", form_opt_2: "Online Meeting", form_opt_3: "Practical Help", form_opt_4: "Personal Care",
@@ -569,9 +656,7 @@
                 srv_1_title: "Onlajn sastanak za sigurnost", srv_1_desc: "Razgovor preko računara/tableta o zdravlju, blagostanju ili praktičnim izazovima.",
                 srv_2_title: "Praktična i lična nega", srv_2_desc: "Pomoć pri kupovini, kuvanju i ličnoj higijeni sa poštovanjem i dostojanstvom.",
                 srv_3_title: "Zdravstveno savetovanje", srv_3_desc: "Ovlašćena procena, upravljanje lekovima i dijalog sa opštinom/lekarom.",
-                about_title: "Upoznajte našeg direktora", about_role: "Direktor, osnivač i ovlašćena medicinska sestra",
-                about_p1: "Diplomirala na Univerzitetu u Malmeu sa dugogodišnjim iskustvom iz Švedske i Srbije, uključujući Odeljenje torakalne hirurgije (SUS Lund) i Kućnu negu u Helsingborgu.",
-                about_p2: "\"Bilo da je potrebna praktična pomoć ili siguran onlajn sastanak, moj tim i ja osiguravamo da su stariji u apsolutno najboljim rukama sa fokusom na stručnost i toplinu.\"",
+                about_title: "Upoznajte našeg direktora", 
                 book_title: "Zakažite onlajn sastanak / pomoć", book_sub: "Nije potrebna prijava. Popunite formular i mi ćemo vas pozvati.",
                 form_name: "Puno ime", form_phone: "Broj telefona", form_subject: "O čemu se radi?",
                 form_opt_1: "Izaberite...", form_opt_2: "Onlajn sastanak", form_opt_3: "Praktična pomoć", form_opt_4: "Lična nega",
@@ -592,6 +677,105 @@
             document.getElementById('service').options[1].text = translations[lang]["form_opt_2"];
             document.getElementById('service').options[2].text = translations[lang]["form_opt_3"];
             document.getElementById('service').options[3].text = translations[lang]["form_opt_4"];
+            
+            // Re-apply local storage overrides for "About us" so it doesn't get overwritten by language change
+            applyLocalEdits(); 
+        }
+
+        // ---------------------------------------------------------
+        // LOCAL CONTENT MANAGEMENT (Skift af tekst og billede via admin)
+        // ---------------------------------------------------------
+        
+        // Kører automatisk når siden loader for at hente dine gemte ændringer
+        document.addEventListener("DOMContentLoaded", function() {
+            applyLocalEdits();
+        });
+        
+        function applyLocalEdits() {
+            // Hent logo
+            const savedLogo = localStorage.getItem("arfianka_logo");
+            if(savedLogo) {
+                document.getElementById('site-logo').src = savedLogo;
+                document.getElementById('footer-logo').src = savedLogo;
+            }
+            
+            // Hent profilbillede
+            const savedProfile = localStorage.getItem("arfianka_profile");
+            if(savedProfile) {
+                document.getElementById('site-profile-pic').style.backgroundImage = `url(${savedProfile})`;
+            }
+            
+            // Hent "Om os" tekster
+            const aboutName = localStorage.getItem("arfianka_about_name");
+            const aboutRole = localStorage.getItem("arfianka_about_role");
+            const aboutP1 = localStorage.getItem("arfianka_about_p1");
+            const aboutP2 = localStorage.getItem("arfianka_about_p2");
+            const isDeleted = localStorage.getItem("arfianka_about_deleted");
+            
+            if (isDeleted === "true") {
+                document.getElementById('om-os').style.display = "none";
+            } else {
+                document.getElementById('om-os').style.display = "block";
+                if(aboutName) {
+                    document.getElementById('about-name').innerText = aboutName;
+                    document.getElementById('editAboutName').value = aboutName;
+                }
+                if(aboutRole) {
+                    document.getElementById('about-role').innerText = aboutRole;
+                    document.getElementById('editAboutRole').value = aboutRole;
+                }
+                if(aboutP1) {
+                    document.getElementById('about-p1').innerText = aboutP1;
+                    document.getElementById('editAboutP1').value = aboutP1;
+                }
+                if(aboutP2) {
+                    document.getElementById('about-p2').innerText = `"${aboutP2.replace(/"/g, '')}"`; 
+                    document.getElementById('editAboutP2').value = aboutP2;
+                }
+            }
+        }
+
+        function handleImageUpload(event, type) {
+            const file = event.target.files[0];
+            if(!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                if (type === 'logo') {
+                    localStorage.setItem("arfianka_logo", base64Image);
+                    alert("Logo er opdateret!");
+                } else if (type === 'profile') {
+                    localStorage.setItem("arfianka_profile", base64Image);
+                    alert("Profilbillede er opdateret!");
+                }
+                applyLocalEdits(); // Opdater designet med det samme
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function saveAboutText() {
+            const name = document.getElementById('editAboutName').value;
+            const role = document.getElementById('editAboutRole').value;
+            const p1 = document.getElementById('editAboutP1').value;
+            const p2 = document.getElementById('editAboutP2').value;
+            
+            localStorage.setItem("arfianka_about_name", name);
+            localStorage.setItem("arfianka_about_role", role);
+            localStorage.setItem("arfianka_about_p1", p1);
+            localStorage.setItem("arfianka_about_p2", p2);
+            localStorage.setItem("arfianka_about_deleted", "false"); // Genopret hvis slettet
+            
+            applyLocalEdits();
+            alert("Tekst er gemt og opdateret på hjemmesiden!");
+        }
+        
+        function deleteAboutText() {
+            if(confirm("Er du sikker på du vil slette 'Om os' sektionen fra hjemmesiden?")) {
+                localStorage.setItem("arfianka_about_deleted", "true");
+                applyLocalEdits();
+                alert("Sektionen er nu skjult.");
+            }
         }
 
         // ---------------------------------------------------------
@@ -647,6 +831,18 @@
             document.getElementById('admin-dashboard').style.display = 'block';
             fetchBookings(); 
         }
+        
+        function switchAdminTab(tab) {
+            // Håndter knapper
+            document.getElementById('tab-btn-bookings').classList.remove('active');
+            document.getElementById('tab-btn-settings').classList.remove('active');
+            document.getElementById('tab-btn-' + tab).classList.add('active');
+            
+            // Håndter visninger
+            document.getElementById('admin-view-bookings').style.display = 'none';
+            document.getElementById('admin-view-settings').style.display = 'none';
+            document.getElementById('admin-view-' + tab).style.display = 'block';
+        }
 
         // ---------------------------------------------------------
         // BOOKING & ADMIN
@@ -693,10 +889,11 @@
                     alert("Forkert email eller adgangskode.");
                 }
             } else {
-                if(email === "admin@arfianka.se" && pass === "1234") {
+                // NYT KODEORD HER!
+                if(email === "admin@arfianka.se" && pass === "Aria-26") {
                     showAdminDashboard();
                 } else {
-                    alert("Demo login er: admin@arfianka.se / 1234");
+                    alert("Forkert login. Demo login er: admin@arfianka.se / Aria-26");
                 }
             }
         }
@@ -717,7 +914,7 @@
             } else {
                 setTimeout(() => {
                     tbody.innerHTML = "";
-                    renderTableRow("demo1", { dato: new Date().toISOString(), navn: "Jens Jensen", telefon: "11223344", tjeneste: "Online Møde", status: "Ny" }, tbody);
+                    renderTableRow("demo1", { dato: new Date().toISOString(), navn: "Jovan", telefon: "060123456", tjeneste: "Onlajn sastanak", status: "Ny" }, tbody);
                 }, 1000);
             }
         }
