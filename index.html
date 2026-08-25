@@ -117,7 +117,6 @@
         /* Hero Section */
         .hero {
             height: 100vh;
-            /* Standard-baggrund, hvis der ikke er uploadet noget */
             background: radial-gradient(circle at center, rgba(195, 154, 92, 0.2) 0%, rgba(13, 44, 84, 0.85) 60%, #0d2c54 100%);
             display: flex;
             flex-direction: column;
@@ -372,6 +371,28 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             margin-bottom: 30px;
         }
+        
+        /* Liste med dynamiske dropdown-services */
+        .admin-service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9f9f9;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            border: 1px solid #eee;
+            font-size: 14px;
+        }
+        .admin-service-item button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
         .admin-table-container {
             overflow-x: auto;
@@ -432,7 +453,7 @@
                 <img src="a3b1c038-c74c-49f8-801e-e018737ac673.jpg" alt="ArFiAnKA Logo" id="site-logo">
             </div>
             <div class="nav-right">
-                <select class="lang-select" onchange="changeLanguage(this.value)">
+                <select class="lang-select" onchange="changeLanguage(this.value)" id="languageSelector">
                     <option value="sr" selected>Srpski</option>
                     <option value="en">English</option>
                 </select>
@@ -502,12 +523,12 @@
                     </div>
                     <div class="form-group">
                         <label data-i18n="form_subject">O čemu se radi?</label>
+                        
+                        <!-- DROP DOWN MENU -->
                         <select id="service" class="form-control" required>
-                            <option value="" data-i18n="form_opt_1">Izaberite...</option>
-                            <option value="Online Møde" data-i18n="form_opt_2">Onlajn sastanak</option>
-                            <option value="Praktisk Hjælp" data-i18n="form_opt_3">Praktična pomoć</option>
-                            <option value="Personlig Pleje" data-i18n="form_opt_4">Lična nega</option>
+                            <!-- Fyldes dynamisk af Javascript -->
                         </select>
+                        
                     </div>
                     <div class="form-group">
                         <label data-i18n="form_msg">Dodatna poruka</label>
@@ -586,7 +607,7 @@
             <div id="admin-view-settings" style="display:none;">
                 <div class="admin-header-flex">
                     <h2>Indstillinger for hjemmeside</h2>
-                    <p>Skift billeder og tekst direkte herfra.</p>
+                    <p>Skift billeder, dropdown-kategorier og tekst direkte herfra.</p>
                 </div>
                 
                 <!-- Rediger Billeder -->
@@ -600,7 +621,6 @@
                         <label>Upload nyt Profilbillede ("Om os")</label>
                         <input type="file" id="uploadProfile" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'profile')">
                     </div>
-                    <!-- NY KNAP TIL AT UPLOADE BAGGRUND -->
                     <div class="form-group">
                         <label>Upload ny Baggrund (Forside)</label>
                         <input type="file" id="uploadBackground" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'background')">
@@ -633,6 +653,21 @@
                     </div>
                 </div>
                 
+                <!-- Rediger Dropdown & Priser -->
+                <div class="admin-card">
+                    <h3 style="color: var(--primary-navy); margin-top:0;">3. Rediger Tjenester (Dropdown & Priser)</h3>
+                    <p style="font-size: 14px; margin-bottom: 20px;">De muligheder, du opretter her, vises i drop-down menuen, når kunden skal booke. <em>Bemærk at disse ikke auto-oversættes.</em></p>
+                    
+                    <ul id="admin-services-list" style="list-style: none; padding: 0; margin-bottom: 20px;">
+                        <!-- Listen med kategorier indlæses her af JS -->
+                    </ul>
+                    
+                    <div class="form-group" style="display: flex; gap: 10px;">
+                        <input type="text" id="newServiceInput" class="form-control" placeholder="F.eks. Lægebesøg - 2500 RSD">
+                        <button type="button" onclick="addNewService()" class="btn-solid" style="padding: 10px 20px;">Tilføj</button>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -653,7 +688,7 @@
                 about_title: "Meet our CEO", 
                 book_title: "Book an online meeting / help", book_sub: "No login required. Fill out the form, and we will call you back.",
                 form_name: "Full Name", form_phone: "Phone Number", form_subject: "What is this regarding?",
-                form_opt_1: "Select...", form_opt_2: "Online Meeting", form_opt_3: "Practical Help", form_opt_4: "Personal Care",
+                form_opt_1: "Select...",
                 form_msg: "Additional message", form_btn: "Send Request"
             },
             sr: {
@@ -667,7 +702,7 @@
                 about_title: "Upoznajte našeg direktora", 
                 book_title: "Zakažite onlajn sastanak / pomoć", book_sub: "Nije potrebna prijava. Popunite formular i mi ćemo vas pozvati.",
                 form_name: "Puno ime", form_phone: "Broj telefona", form_subject: "O čemu se radi?",
-                form_opt_1: "Izaberite...", form_opt_2: "Onlajn sastanak", form_opt_3: "Praktična pomoć", form_opt_4: "Lična nega",
+                form_opt_1: "Izaberite...",
                 form_msg: "Dodatna poruka", form_btn: "Pošalji zahtev"
             }
         };
@@ -681,10 +716,11 @@
                 }
             });
             
-            document.getElementById('service').options[0].text = translations[lang]["form_opt_1"];
-            document.getElementById('service').options[1].text = translations[lang]["form_opt_2"];
-            document.getElementById('service').options[2].text = translations[lang]["form_opt_3"];
-            document.getElementById('service').options[3].text = translations[lang]["form_opt_4"];
+            // Opdater "Vælg..." i dropdown
+            const defaultOption = document.getElementById('service').options[0];
+            if(defaultOption) {
+                defaultOption.text = translations[lang]["form_opt_1"];
+            }
             
             applyLocalEdits(); 
         }
@@ -692,8 +728,15 @@
         // ---------------------------------------------------------
         // LOCAL CONTENT MANAGEMENT (CMS)
         // ---------------------------------------------------------
+        
+        // Standard services hvis admin ikke har lavet sine egne endnu
+        let currentServices = ["Onlajn sastanak", "Praktična pomoć", "Lična nega"];
+
         document.addEventListener("DOMContentLoaded", function() {
             applyLocalEdits();
+            // Start med at sætte korrekt "Izaberite..." sprog i dropdown
+            const currentLang = document.getElementById('languageSelector').value;
+            changeLanguage(currentLang);
         });
         
         function applyLocalEdits() {
@@ -714,7 +757,6 @@
             const savedBackground = localStorage.getItem("arfianka_background");
             const heroEl = document.getElementById('forside');
             if(savedBackground) {
-                // Lægger det mørkeblå filter over det uploadede billede
                 heroEl.style.background = `linear-gradient(rgba(13, 44, 84, 0.75), rgba(13, 44, 84, 0.75)), url(${savedBackground}) center/cover`;
             } else {
                 heroEl.style.background = `radial-gradient(circle at center, rgba(195, 154, 92, 0.2) 0%, rgba(13, 44, 84, 0.85) 60%, #0d2c54 100%)`;
@@ -748,8 +790,18 @@
                     document.getElementById('editAboutP2').value = aboutP2;
                 }
             }
+            
+            // Hent Dynamiske Tjenester (Dropdown muligheder)
+            const savedServicesJSON = localStorage.getItem("arfianka_services");
+            if(savedServicesJSON) {
+                currentServices = JSON.parse(savedServicesJSON);
+            }
+            
+            renderAdminServicesList();
+            renderClientDropdown();
         }
 
+        // Håndtering af billeder
         function handleImageUpload(event, type) {
             const file = event.target.files[0];
             if(!file) return;
@@ -772,6 +824,7 @@
             reader.readAsDataURL(file);
         }
         
+        // Håndtering af "Om os" tekst
         function saveAboutText() {
             const name = document.getElementById('editAboutName').value;
             const role = document.getElementById('editAboutRole').value;
@@ -793,6 +846,71 @@
                 localStorage.setItem("arfianka_about_deleted", "true");
                 applyLocalEdits();
                 alert("Sektionen er nu skjult.");
+            }
+        }
+        
+        // ---------------------------------------------------------
+        // DYNAMISK DROPDOWN (Tilføj / Slet Tjenester og Priser)
+        // ---------------------------------------------------------
+        
+        function renderAdminServicesList() {
+            const listEl = document.getElementById('admin-services-list');
+            listEl.innerHTML = '';
+            
+            if(currentServices.length === 0) {
+                listEl.innerHTML = '<li style="color:#666; font-style:italic;">Ingen muligheder oprettet. Tilføj en herunder.</li>';
+                return;
+            }
+            
+            currentServices.forEach((service, index) => {
+                const li = document.createElement('li');
+                li.className = 'admin-service-item';
+                li.innerHTML = `
+                    <span>${service}</span>
+                    <button onclick="deleteService(${index})">Slet</button>
+                `;
+                listEl.appendChild(li);
+            });
+        }
+        
+        function renderClientDropdown() {
+            const selectEl = document.getElementById('service');
+            
+            // Gem nuværende oversættelse for "Vælg..."
+            const currentLang = document.getElementById('languageSelector').value;
+            const selectPlaceholder = translations[currentLang]["form_opt_1"] || "Izaberite...";
+            
+            // Nulstil dropdown og sæt den første "Vælg..." mulighed ind
+            selectEl.innerHTML = `<option value="">${selectPlaceholder}</option>`;
+            
+            // Indsæt de dynamiske muligheder
+            currentServices.forEach(service => {
+                const opt = document.createElement('option');
+                opt.value = service;
+                opt.innerText = service;
+                selectEl.appendChild(opt);
+            });
+        }
+        
+        function addNewService() {
+            const inputEl = document.getElementById('newServiceInput');
+            const newService = inputEl.value.trim();
+            
+            if(newService !== '') {
+                currentServices.push(newService);
+                localStorage.setItem("arfianka_services", JSON.stringify(currentServices));
+                inputEl.value = ''; // Ryd input felt
+                applyLocalEdits();
+            } else {
+                alert("Skriv venligst et navn på tjenesten/kategorien.");
+            }
+        }
+        
+        function deleteService(index) {
+            if(confirm("Vil du flette denne mulighed?")) {
+                currentServices.splice(index, 1);
+                localStorage.setItem("arfianka_services", JSON.stringify(currentServices));
+                applyLocalEdits();
             }
         }
 
@@ -929,7 +1047,7 @@
             } else {
                 setTimeout(() => {
                     tbody.innerHTML = "";
-                    renderTableRow("demo1", { dato: new Date().toISOString(), navn: "Jovan", telefon: "060123456", tjeneste: "Onlajn sastanak", status: "Ny" }, tbody);
+                    renderTableRow("demo1", { dato: new Date().toISOString(), navn: "Jovan", telefon: "060123456", tjeneste: currentServices[0] || "Ukendt", status: "Ny" }, tbody);
                 }, 1000);
             }
         }
