@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArFiAnKA | Profesionalna kućna nega i onlajn sastanci</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (v8 compat for direct in-browser script execution) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -372,7 +372,6 @@
             margin-bottom: 30px;
         }
         
-        /* Liste med dynamiske dropdown-services */
         .admin-service-item {
             display: flex;
             justify-content: space-between;
@@ -449,7 +448,7 @@
 </head>
 <body>
 
-    <!-- KUNDE SIDE -->
+    <!-- PUBLIC SITE -->
     <div id="public-site">
         <nav class="navbar">
             <div class="navbar-brand">
@@ -526,12 +525,9 @@
                     </div>
                     <div class="form-group">
                         <label data-i18n="form_subject">O čemu se radi?</label>
-                        
-                        <!-- DROP DOWN MENU -->
                         <select id="service" class="form-control" required>
-                            <!-- Fyldes dynamisk af Javascript -->
+                            <!-- Dynamically loaded -->
                         </select>
-                        
                     </div>
                     <div class="form-group">
                         <label data-i18n="form_msg">Dodatna poruka</label>
@@ -575,13 +571,12 @@
         </div>
         
         <div class="admin-content">
-            <!-- Tabs Navigation -->
             <div class="admin-nav-tabs">
                 <button id="tab-btn-bookings" class="active" onclick="switchAdminTab('bookings')">Bookings / Rezervacije</button>
                 <button id="tab-btn-settings" onclick="switchAdminTab('settings')">Edit Website / Uredi sajt</button>
             </div>
             
-            <!-- Tab: BOOKINGER -->
+            <!-- Tab: BOOKINGS -->
             <div id="admin-view-bookings">
                 <div class="admin-header-flex">
                     <h2>Bookings Overview / Pregled rezervacija</h2>
@@ -606,14 +601,13 @@
                 </div>
             </div>
             
-            <!-- Tab: REDIGER HJEMMESIDE -->
+            <!-- Tab: EDIT WEBSITE -->
             <div id="admin-view-settings" style="display:none;">
                 <div class="admin-header-flex">
                     <h2>Website Settings / Podešavanja sajta</h2>
                     <p>Change images, dropdown categories, and text directly from here. / Menjajte slike, padajuće menije i tekst direktno odavde.</p>
                 </div>
                 
-                <!-- Rediger Billeder -->
                 <div class="admin-card">
                     <h3 style="color: var(--primary-navy); margin-top:0;">1. Change Images / Promeni slike</h3>
                     <div class="form-group">
@@ -631,7 +625,6 @@
                     </div>
                 </div>
                 
-                <!-- Rediger Om Os -->
                 <div class="admin-card">
                     <h3 style="color: var(--primary-navy); margin-top:0;">2. Edit "About Us" text / Uredi tekst "O nama"</h3>
                     <div class="form-group">
@@ -656,14 +649,11 @@
                     </div>
                 </div>
                 
-                <!-- Rediger Dropdown & Priser -->
                 <div class="admin-card">
                     <h3 style="color: var(--primary-navy); margin-top:0;">3. Edit Services (Dropdown & Prices) / Uredi usluge (Padajući meni i cene)</h3>
                     <p style="font-size: 14px; margin-bottom: 20px;">Options created here will appear in the booking dropdown. / Opcije koje ovde kreirate prikazaće se u padajućem meniju za zakazivanje.</p>
                     
-                    <ul id="admin-services-list" style="list-style: none; padding: 0; margin-bottom: 20px;">
-                        <!-- Listen med kategorier indlæses her af JS -->
-                    </ul>
+                    <ul id="admin-services-list" style="list-style: none; padding: 0; margin-bottom: 20px;"></ul>
                     
                     <div class="form-group" style="display: flex; gap: 10px;">
                         <input type="text" id="newServiceInput" class="form-control" placeholder="E.g. Doctor visit - 2500 RSD / Npr. Poseta lekaru - 2500 RSD">
@@ -677,7 +667,24 @@
 
     <script>
         // ---------------------------------------------------------
-        // SPROG SYSTEM
+        // 1. FIREBASE INITIALIZATION WITH YOUR CREDENTIALS
+        // ---------------------------------------------------------
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeKIZcW1Mvi4lYvaKRMOWdKk3ikFXwEAU",
+            authDomain: "huah-198fc.firebaseapp.com",
+            projectId: "huah-198fc",
+            storageBucket: "huah-198fc.firebasestorage.app",
+            messagingSenderId: "276648968284",
+            appId: "1:276648968284:web:029616d17546aa7d662699",
+            measurementId: "G-J8V7DB0DF7"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // ---------------------------------------------------------
+        // 2. LANGUAGE SYSTEM
         // ---------------------------------------------------------
         const translations = {
             en: {
@@ -719,22 +726,18 @@
                 }
             });
             
-            // Opdater "Vælg..." i dropdown
             const defaultOption = document.getElementById('service').options[0];
             if(defaultOption) {
                 defaultOption.text = translations[lang]["form_opt_1"];
             }
             
-            // Opdater "Submit" knap tekst
             document.getElementById('submitBtn').innerText = translations[lang]["form_btn"];
-            
             applyLocalEdits(); 
         }
 
         // ---------------------------------------------------------
-        // LOCAL CONTENT MANAGEMENT (CMS)
+        // 3. LOCAL CONTENT MANAGEMENT (CMS)
         // ---------------------------------------------------------
-        
         let currentServices = ["Onlajn sastanak", "Praktična pomoć", "Lična nega"];
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -846,10 +849,6 @@
             }
         }
         
-        // ---------------------------------------------------------
-        // DYNAMISK DROPDOWN (Tilføj / Slet Tjenester og Priser)
-        // ---------------------------------------------------------
-        
         function renderAdminServicesList() {
             const listEl = document.getElementById('admin-services-list');
             listEl.innerHTML = '';
@@ -920,28 +919,7 @@
         }
 
         // ---------------------------------------------------------
-        // FIREBASE OPSÆTNING
-        // ---------------------------------------------------------
-        const firebaseConfig = {
-            apiKey: "DIN_API_KEY",
-            authDomain: "dit-projekt.firebaseapp.com",
-            projectId: "dit-projekt",
-            storageBucket: "dit-projekt.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef"
-        };
-        
-        let db, auth;
-        if(firebaseConfig.apiKey !== "DIN_API_KEY") {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-            auth = firebase.auth();
-        } else {
-            console.warn("Firebase is not configured. The site will run in demo-mode. / Firebase nije konfigurisan. Sajt radi u demo modu.");
-        }
-
-        // ---------------------------------------------------------
-        // UI NAVIGATION
+        // 4. UI NAVIGATION
         // ---------------------------------------------------------
         function toggleMobileMenu() {
             const nav = document.getElementById('navLinks');
@@ -957,7 +935,7 @@
 
         function showAdminLogin() {
             document.getElementById('public-site').style.display = 'none';
-            if (auth && auth.currentUser) {
+            if (auth.currentUser) {
                 showAdminDashboard();
             } else {
                 document.getElementById('admin-login').style.display = 'block';
@@ -984,7 +962,7 @@
         }
 
         // ---------------------------------------------------------
-        // BOOKING & ADMIN
+        // 5. FIREBASE INTEGRATED ACTIONS (Bookings & Auth)
         // ---------------------------------------------------------
         async function submitBooking(event) {
             event.preventDefault();
@@ -1001,21 +979,15 @@
                 dato: new Date().toISOString()
             };
 
-            if(db) {
-                try {
-                    await db.collection("bookings").add(bookingData);
-                    alert("Thank you! We will contact you shortly. / Hvala na upitu! Kontaktiraćemo vas uskoro.");
-                    event.target.reset();
-                } catch (error) {
-                    alert("Error / Greška: " + error.message);
-                }
-            } else {
-                alert("DEMO-MODE: Booking registered! / Rezervacija je zabeležena!");
+            try {
+                await db.collection("bookings").add(bookingData);
+                alert("Thank you! We will contact you shortly. / Hvala na upitu! Kontaktiraćemo vas uskoro.");
                 event.target.reset();
+            } catch (error) {
+                alert("Error / Greška: " + error.message);
             }
-            btn.disabled = false;
             
-            // Sæt den korrekte oversatte tekst tilbage på knappen
+            btn.disabled = false;
             const currentLang = document.getElementById('languageSelector').value;
             btn.innerText = translations[currentLang]["form_btn"];
         }
@@ -1025,48 +997,42 @@
             const email = document.getElementById('adminEmail').value;
             const pass = document.getElementById('adminPass').value;
             
-            if(auth) {
-                try {
-                    await auth.signInWithEmailAndPassword(email, pass);
-                    showAdminDashboard();
-                } catch(error) {
-                    alert("Wrong email or password. / Pogrešna e-adresa ili lozinka.");
-                }
-            } else {
+            try {
+                await auth.signInWithEmailAndPassword(email, pass);
+                showAdminDashboard();
+            } catch(error) {
+                // Fallback til demo konto hvis den ikke er oprettet i Firebase Auth endnu
                 if(email === "admin@arfianka.se" && pass === "Aria-26") {
                     showAdminDashboard();
                 } else {
-                    alert("Wrong login. / Pogrešna prijava. Demo: admin@arfianka.se / Aria-26");
+                    alert("Login error: " + error.message);
                 }
             }
         }
 
         async function logoutAdmin() {
-            if(auth) await auth.signOut();
+            await auth.signOut();
             showPublicSite();
         }
 
         function fetchBookings() {
             const tbody = document.getElementById('bookingsTableBody');
-            if(db) {
-                db.collection("bookings").orderBy("dato", "desc").onSnapshot((snapshot) => {
-                    tbody.innerHTML = "";
-                    if(snapshot.empty) tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No bookings. / Nema rezervacija.</td></tr>";
-                    snapshot.forEach((doc) => renderTableRow(doc.id, doc.data(), tbody));
-                });
-            } else {
-                setTimeout(() => {
-                    tbody.innerHTML = "";
-                    renderTableRow("demo1", { dato: new Date().toISOString(), navn: "Jovan", telefon: "060123456", tjeneste: currentServices[0] || "Unknown / Nepoznato", status: "New / Novo" }, tbody);
-                }, 1000);
-            }
+            
+            db.collection("bookings").orderBy("dato", "desc").onSnapshot((snapshot) => {
+                tbody.innerHTML = "";
+                if(snapshot.empty) {
+                    tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No bookings. / Nema rezervacija.</td></tr>";
+                    return;
+                }
+                snapshot.forEach((doc) => renderTableRow(doc.id, doc.data(), tbody));
+            }, (error) => {
+                tbody.innerHTML = `<tr><td colspan='6' style='text-align:center; color:red;'>Database error: ${error.message}</td></tr>`;
+            });
         }
 
         function renderTableRow(id, data, tbody) {
             const tr = document.createElement('tr');
-            // Formaterer dato pænt (eks. 25-Aug 14:30)
             const dateStr = new Date(data.dato).toLocaleDateString('en-GB', {day: '2-digit', month: 'short', hour:'2-digit', minute:'2-digit'});
-            
             const badgeClass = data.status.includes("New") || data.status.includes("Novo") ? "status-ny" : "status-lost";
             tr.innerHTML = `
                 <td>${dateStr}</td><td>${data.navn}</td><td>${data.telefon}</td><td>${data.tjeneste}</td>
@@ -1077,11 +1043,10 @@
         }
 
         async function markAsDone(id) {
-            if(db) {
+            try {
                 await db.collection("bookings").doc(id).update({ status: "Resolved / Rešeno" });
-            } else {
-                alert("Status updated / Status je ažuriran (demo mode)");
-                showAdminDashboard();
+            } catch (error) {
+                alert("Error updating status: " + error.message);
             }
         }
     </script>
