@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArFiAnKA | Professionel Ældrepleje & Online Møder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-navy: #0d2c54;
+            --primary-gold: #c39a5c;
+            --bg-light: #fdfbf7;
+            --text-dark: #333333;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 50px;
+            background-color: rgba(13, 44, 84, 0.95);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+            backdrop-filter: blur(5px);
+        }
+
+        .navbar-brand img {
+            height: 60px;
+            border-radius: 5px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-gold);
+        }
+
+        .btn-outline {
+            border: 1px solid white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            border: 2px solid white;
+        }
+        
+        .btn-outline:hover {
+            background-color: white;
+            color: var(--primary-navy) !important;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(13, 44, 84, 0.7), rgba(13, 44, 84, 0.7)), url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?q=80&w=2000&auto=format&fit=crop') center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn-solid {
+            background-color: var(--primary-gold);
+            color: white;
+            padding: 15px 35px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 2px solid var(--primary-gold);
+            transition: 0.3s;
+        }
+
+        .btn-solid:hover {
+            background-color: transparent;
+            color: var(--primary-gold);
+        }
+
+        /* Sections General */
+        .section {
+            padding: 100px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--primary-navy);
+            margin-bottom: 60px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Services */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .service-card {
+            background: white;
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-bottom: 4px solid var(--primary-gold);
+        }
+
+        .service-card h3 {
+            color: var(--primary-navy);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        /* About Us / CEO Profile */
+        .about-container {
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+            margin-top: 20px;
+        }
+
+        .about-image {
+            flex: 1;
+            background: url('Kri.jpg') center top/cover;
+            min-height: 500px;
+        }
+
+        .about-content {
+            flex: 1.5;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .about-content h2 {
+            font-size: 2.2rem;
+            color: var(--primary-navy);
+            margin-bottom: 5px;
+            margin-top: 0;
+        }
+
+        .title-gold {
+            color: var(--primary-gold);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+        }
+
+        .about-content p {
+            line-height: 1.8;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        /* Booking Form */
+        .booking-section {
+            background-color: var(--primary-navy);
+            color: white;
+            padding: 80px 20px;
+        }
+
+        .booking-section .section-title {
+            color: white;
+        }
+
+        .booking-form {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 15px;
+            color: var(--text-dark);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-navy);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+        }
+        
+        .submit-btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* Admin Dashboard (Hidden by default) */
+        #admin-dashboard {
+            display: none;
+            padding: 120px 50px 50px 50px;
+            background-color: #f4f7f6;
+            min-height: 100vh;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .admin-table-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: var(--primary-navy);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            background: #ffeeba;
+            color: #856404;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #081a33;
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .about-container { flex-direction: column; }
+            .about-image { min-height: 300px; }
+            .nav-links { display: none; /* Simplification for mobile in this demo */ }
+            .hero h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Public Site -->
+    <div id="public-site">
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <!-- Using the provided logo -->
+                <img src="6768.jpg" alt="ArFiAnKA Logo">
+            </div>
+            <div class="nav-links">
+                <a href="#forside">Forside</a>
+                <a href="#tjenester">Tjenester</a>
+                <a href="#om-os">Om Os</a>
+                <a href="#book" class="btn-outline">Book Møde</a>
+                <a href="#" onclick="toggleAdmin()" style="color: var(--primary-gold);">Admin Adgang</a>
+            </div>
+        </nav>
+
+        <header class="hero" id="forside">
+            <h1>Velkommen til ArFiAnKA</h1>
+            <p>Hos ArFiAnKA kombinerer vi høj faglighed med hjertevarm omsorg. Vi tilbyder professionel hjemmepleje, hjælp til hverdagens gøremål og trygge online møder for ældre – skræddersyet til dine og dine pårørendes behov.</p>
+            <div class="hero-buttons">
+                <a href="#book" class="btn-solid">Book et online møde</a>
+                <a href="#tjenester" class="btn-solid" style="background: transparent;">Se vores hjælp</a>
+            </div>
+        </header>
+
+        <section id="tjenester" class="section">
+            <h2 class="section-title">Vi hjælper med næsten alt</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <h3>Online Tryghedsmøde</h3>
+                    <p>En samtale over computer eller tablet. Vi tager en snak om helbred, trivsel eller praktiske udfordringer – nemt og trygt hjemme fra stuen.</p>
+                </div>
+                <div class="service-card">
+                    <h3>Praktisk & Personlig Pleje</h3>
+                    <p>Hjælp til indkøb, madlavning, rengøring eller personlig hygiejne. Vi udfører opgaverne med respekt og værdighed for det enkelte menneske.</p>
+                </div>
+                <div class="service-card">
+                    <h3>Sundhedsfaglig Rådgivning</h3>
+                    <p>Med en autoriseret sygeplejerske i spidsen tilbyder vi professionel vurdering, medicinhåndtering og dialog med det offentlige sundhedssystem.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="om-os" class="section" style="background-color: var(--bg-light);">
+            <h2 class="section-title">Mød vores CEO</h2>
+            <div class="about-container">
+                <div class="about-image"></div>
+                <div class="about-content">
+                    <h2>Kristina Ciric Ahmed</h2>
+                    <div class="title-gold">CEO, Grundlægger & Autoriseret Sygeplejerske</div>
+                    <p>Med en dyb passion for omsorg og over 15 års erfaring inden for sundhedssektoren i både Sverige og Serbien, leder Kristina ArFiAnKA med hjertet på rette sted.</p>
+                    <p>Kristina er uddannet sygeplejerske fra Malmö Universitet og har en bred og solid klinisk baggrund. Hun har blandt andet arbejdet med avanceret pleje på Thoraxkirurgisk afdeling (SUS Lund), Onkologi, Njuravdelning samt som sygeplejerske i Helsingborgs Hemsjukvård.</p>
+                    <p><em>"Min vision med ArFiAnKA er at skabe en ældrepleje, hvor tryghed, høj faglighed og personlig hjælp går hånd i hånd. Uanset om der er brug for hjælp til praktiske gøremål eller et trygt online møde, sikrer jeg og mit team, at de ældre er i de absolut bedste hænder."</em></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="book" class="booking-section">
+            <h2 class="section-title">Book et online møde eller hjælp</h2>
+            <div class="booking-form">
+                <p style="text-align: center; margin-bottom: 30px; color: #666;">Udfyld formularen herunder, så kontakter vi dig hurtigst muligt for at bekræfte aftalen. <strong>Du behøver ikke at logge ind.</strong></p>
+                <form onsubmit="submitForm(event)">
+                    <div class="form-group">
+                        <label for="name">Fulde Navn (på dig eller den ældre)</label>
+                        <input type="text" id="name" class="form-control" required placeholder="F.eks. Jens Jensen">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Telefonnummer</label>
+                        <input type="tel" id="phone" class="form-control" required placeholder="Dit telefonnummer">
+                    </div>
+                    <div class="form-group">
+                        <label for="service">Hvad drejer henvendelsen sig om?</label>
+                        <select id="service" class="form-control" required>
+                            <option value="">Vælg venligst...</option>
+                            <option value="Online Møde">Book et Online Møde</option>
+                            <option value="Praktisk Hjælp">Hjælp til praktiske gøremål</option>
+                            <option value="Personlig Pleje">Personlig pleje / Sundhed</option>
+                            <option value="Andet">Andet (skriv i besked)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Evt. besked eller foretrukket tidspunkt</label>
+                        <textarea id="message" rows="4" class="form-control" placeholder="Beskriv kort, hvad vi kan hjælpe med..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-solid submit-btn">Send Forespørgsel</button>
+                </form>
+            </div>
+        </section>
+
+        <footer>
+            <img src="6768.jpg" alt="Logo" style="height: 50px; border-radius: 5px; margin-bottom: 20px;">
+            <p>ArFiAnKA - Kućna nega i pomoć starijima</p>
+            <p>&copy; 2026 ArFiAnKA. Alle rettigheder forbeholdes.</p>
+        </footer>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="admin-dashboard">
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <span style="color: white; font-family: 'Playfair Display'; font-size: 24px; font-weight: bold;">ArFiAnKA ADMIN</span>
+            </div>
+            <div class="nav-links">
+                <a href="#" onclick="toggleAdmin()">Tilbage til Hjemmeside</a>
+            </div>
+        </nav>
+
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <div class="admin-header">
+                <h2 style="color: var(--primary-navy); margin: 0;">Oversigt over Bookinger & Forespørgsler</h2>
+                <button class="btn-solid" style="padding: 10px 20px; font-size: 12px;" onclick="alert('Opdaterer liste...')">Opdater Liste</button>
+            </div>
+
+            <div class="admin-table-container">
+                <table id="bookings-table">
+                    <thead>
+                        <tr>
+                            <th>Dato Modtaget</th>
+                            <th>Navn</th>
+                            <th>Telefon</th>
+                            <th>Tjeneste</th>
+                            <th>Status</th>
+                            <th>Handling</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dummy Data -->
+                        <tr>
+                            <td>25. Aug 2026</td>
+                            <td>Kirsten Hansen</td>
+                            <td>+45 12 34 56 78</td>
+                            <td>Online Møde</td>
+                            <td><span class="status-badge">Afventer Opkald</span></td>
+                            <td><button style="cursor:pointer; padding:5px 10px; background:var(--primary-navy); color:white; border:none; border-radius:3px;">Marker som løst</button></td>
+                        </tr>
+                        <tr>
+                            <td>24. Aug 2026</td>
+                            <td>Søren Poulsen (Pårørende)</td>
+                            <td>+45 87 65 43 21</td>
+                            <td>Praktisk Hjælp</td>
+                            <td><span class="status-badge" style="background:#d4edda; color:#155724;">Aftale Bekræftet</span></td>
+                            <td><button style="cursor:pointer; padding:5px 10px; background:var(--primary-navy); color:white; border:none; border-radius:3px;">Se detaljer</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for funktionalitet -->
+    <script>
+        // Skift mellem kunde-side og admin-side
+        function toggleAdmin() {
+            const publicSite = document.getElementById('public-site');
+            const adminDash = document.getElementById('admin-dashboard');
+            
+            if (publicSite.style.display === 'none') {
+                publicSite.style.display = 'block';
+                adminDash.style.display = 'none';
+                window.scrollTo(0,0);
+            } else {
+                publicSite.style.display = 'none';
+                adminDash.style.display = 'block';
+                window.scrollTo(0,0);
+            }
+        }
+
+        // Håndtering af formular submission
+        function submitForm(event) {
+            event.preventDefault(); // Forhindrer at siden genindlæser
+            
+            // Hent data fra formularen
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const service = document.getElementById('service').value;
+            
+            // Simuler at data sendes og gemmes i admin panelet
+            const table = document.getElementById('bookings-table').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow(0); // Indsæt i toppen
+            
+            const today = new Date().toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' });
+            
+            newRow.innerHTML = `
+                <td>${today}</td>
+                <td>${name}</td>
+                <td>${phone}</td>
+                <td>${service}</td>
+                <td><span class="status-badge" style="background:#f8d7da; color:#721c24;">NY!</span></td>
+                <td><button style="cursor:pointer; padding:5px 10px; background:var(--primary-navy); color:white; border:none; border-radius:3px;">Behandl</button></td>
+            `;
+            
+            // Vis succesbesked til brugeren og ryd formen
+            alert(`Tak ${name}! Din anmodning om "${service}" er modtaget. Vi kontakter dig på ${phone} snarest.`);
+            event.target.reset();
+        }
+    </script>
+</body>
+</html>
