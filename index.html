@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="da">
+<html lang="sr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArFiAnKA | Professionel Ældrepleje & Online Møder</title>
+    <title>ArFiAnKA | Profesionalna kućna nega i onlajn sastanci</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -399,88 +399,87 @@
             </div>
             <div class="nav-right">
                 <select class="lang-select" onchange="changeLanguage(this.value)">
-                    <option value="da">Dansk</option>
+                    <option value="sr" selected>Srpski</option>
                     <option value="en">English</option>
-                    <option value="sr">Srpski</option>
                 </select>
                 <div class="menu-toggle" onclick="toggleMobileMenu()">☰</div>
             </div>
             <div class="nav-links" id="navLinks">
-                <a href="#forside" onclick="toggleMobileMenu()" data-i18n="nav_home">Forside</a>
-                <a href="#tjenester" onclick="toggleMobileMenu()" data-i18n="nav_services">Tjenester</a>
-                <a href="#om-os" onclick="toggleMobileMenu()" data-i18n="nav_about">Om Os</a>
-                <a href="#book" class="btn-outline" onclick="toggleMobileMenu()" data-i18n="nav_book">Book Møde</a>
+                <a href="#forside" onclick="toggleMobileMenu()" data-i18n="nav_home">Početna</a>
+                <a href="#tjenester" onclick="toggleMobileMenu()" data-i18n="nav_services">Usluge</a>
+                <a href="#om-os" onclick="toggleMobileMenu()" data-i18n="nav_about">O nama</a>
+                <a href="#book" class="btn-outline" onclick="toggleMobileMenu()" data-i18n="nav_book">Zakaži</a>
                 <a href="#" onclick="showAdminLogin()" style="color: var(--primary-gold);" data-i18n="nav_admin">Admin</a>
             </div>
         </nav>
 
         <header class="hero" id="forside">
-            <h1 data-i18n="hero_title">Velkommen til ArFiAnKA</h1>
-            <p data-i18n="hero_desc">Professionel hjemmepleje og trygge online møder for ældre, ledet med hjertet og høj faglighed.</p>
+            <h1 data-i18n="hero_title">Dobrodošli u ArFiAnKA</h1>
+            <p data-i18n="hero_desc">Profesionalna kućna nega i sigurni onlajn sastanci za starije, vođeni srcem i visokom stručnošću.</p>
             <div class="hero-buttons">
-                <a href="#book" class="btn-solid" data-i18n="hero_btn_book">Book et online møde</a>
-                <a href="#tjenester" class="btn-solid" style="background: transparent;" data-i18n="hero_btn_help">Se vores hjælp</a>
+                <a href="#book" class="btn-solid" data-i18n="hero_btn_book">Zakaži onlajn sastanak</a>
+                <a href="#tjenester" class="btn-solid" style="background: transparent;" data-i18n="hero_btn_help">Naše usluge</a>
             </div>
         </header>
 
         <section id="tjenester" class="section">
-            <h2 class="section-title" data-i18n="srv_title">Vi hjælper med alt</h2>
+            <h2 class="section-title" data-i18n="srv_title">Pomažemo u svemu</h2>
             <div class="services-grid">
                 <div class="service-card">
-                    <h3 data-i18n="srv_1_title">Online Tryghedsmøde</h3>
-                    <p data-i18n="srv_1_desc">En samtale over computer/tablet om helbred, trivsel eller praktiske udfordringer.</p>
+                    <h3 data-i18n="srv_1_title">Onlajn sastanak za sigurnost</h3>
+                    <p data-i18n="srv_1_desc">Razgovor preko računara/tableta o zdravlju, blagostanju ili praktičnim izazovima.</p>
                 </div>
                 <div class="service-card">
-                    <h3 data-i18n="srv_2_title">Praktisk & Personlig Pleje</h3>
-                    <p data-i18n="srv_2_desc">Hjælp til indkøb, madlavning, og personlig hygiejne med respekt og værdighed.</p>
+                    <h3 data-i18n="srv_2_title">Praktična i lična nega</h3>
+                    <p data-i18n="srv_2_desc">Pomoć pri kupovini, kuvanju i ličnoj higijeni sa poštovanjem i dostojanstvom.</p>
                 </div>
                 <div class="service-card">
-                    <h3 data-i18n="srv_3_title">Sundhedsfaglig Rådgivning</h3>
-                    <p data-i18n="srv_3_desc">Autoriseret vurdering, medicinhåndtering og dialog med kommunen/lægen.</p>
+                    <h3 data-i18n="srv_3_title">Zdravstveno savetovanje</h3>
+                    <p data-i18n="srv_3_desc">Ovlašćena procena, upravljanje lekovima i dijalog sa opštinom/lekarom.</p>
                 </div>
             </div>
         </section>
 
         <section id="om-os" class="section" style="background-color: var(--bg-light);">
-            <h2 class="section-title" data-i18n="about_title">Mød vores CEO</h2>
+            <h2 class="section-title" data-i18n="about_title">Upoznajte našeg direktora</h2>
             <div class="about-container">
                 <div class="about-image"></div>
                 <div class="about-content">
                     <h2>Kristina Ciric Ahmed</h2>
-                    <div class="title-gold" data-i18n="about_role">CEO, Grundlægger & Autoriseret Sygeplejerske</div>
-                    <p data-i18n="about_p1">Uddannet fra Malmö Universitet med mange års erfaring fra både Sverige og Serbien, bl.a. på Thoraxkirurgisk afdeling (SUS Lund) og Hemsjukvården i Helsingborg.</p>
-                    <p><em data-i18n="about_p2">"Uanset om der er brug for praktisk hjælp eller et trygt online møde, sikrer jeg og mit team, at de ældre er i de absolut bedste hænder med faglighed og varme i fokus."</em></p>
+                    <div class="title-gold" data-i18n="about_role">Direktor, osnivač i ovlašćena medicinska sestra</div>
+                    <p data-i18n="about_p1">Diplomirala na Univerzitetu u Malmeu sa dugogodišnjim iskustvom iz Švedske i Srbije, uključujući Odeljenje torakalne hirurgije (SUS Lund) i Kućnu negu u Helsingborgu.</p>
+                    <p><em data-i18n="about_p2">"Bilo da je potrebna praktična pomoć ili siguran onlajn sastanak, moj tim i ja osiguravamo da su stariji u apsolutno najboljim rukama sa fokusom na stručnost i toplinu."</em></p>
                 </div>
             </div>
         </section>
 
         <section id="book" class="booking-section">
-            <h2 class="section-title" data-i18n="book_title">Book et online møde / hjælp</h2>
+            <h2 class="section-title" data-i18n="book_title">Zakažite onlajn sastanak / pomoć</h2>
             <div class="booking-form">
-                <p style="text-align: center; margin-bottom: 20px;" data-i18n="book_sub">Intet login kræves. Udfyld formularen, så ringer vi dig op.</p>
+                <p style="text-align: center; margin-bottom: 20px;" data-i18n="book_sub">Nije potrebna prijava. Popunite formular i mi ćemo vas pozvati.</p>
                 <form id="bookingForm" onsubmit="submitBooking(event)">
                     <div class="form-group">
-                        <label data-i18n="form_name">Fulde Navn</label>
+                        <label data-i18n="form_name">Puno ime</label>
                         <input type="text" id="name" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label data-i18n="form_phone">Telefonnummer</label>
+                        <label data-i18n="form_phone">Broj telefona</label>
                         <input type="tel" id="phone" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label data-i18n="form_subject">Hvad drejer det sig om?</label>
+                        <label data-i18n="form_subject">O čemu se radi?</label>
                         <select id="service" class="form-control" required>
-                            <option value="" data-i18n="form_opt_1">Vælg...</option>
-                            <option value="Online Møde" data-i18n="form_opt_2">Online Møde</option>
-                            <option value="Praktisk Hjælp" data-i18n="form_opt_3">Praktisk Hjælp</option>
-                            <option value="Personlig Pleje" data-i18n="form_opt_4">Personlig Pleje</option>
+                            <option value="" data-i18n="form_opt_1">Izaberite...</option>
+                            <option value="Online Møde" data-i18n="form_opt_2">Onlajn sastanak</option>
+                            <option value="Praktisk Hjælp" data-i18n="form_opt_3">Praktična pomoć</option>
+                            <option value="Personlig Pleje" data-i18n="form_opt_4">Lična nega</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label data-i18n="form_msg">Evt. besked</label>
+                        <label data-i18n="form_msg">Dodatna poruka</label>
                         <textarea id="message" rows="3" class="form-control"></textarea>
                     </div>
-                    <button type="submit" class="btn-solid submit-btn" id="submitBtn" data-i18n="form_btn">Send Forespørgsel</button>
+                    <button type="submit" class="btn-solid submit-btn" id="submitBtn" data-i18n="form_btn">Pošalji zahtev</button>
                 </form>
             </div>
         </section>
@@ -505,7 +504,7 @@
                     <input type="password" id="adminPass" class="form-control" required>
                 </div>
                 <button type="submit" class="btn-solid submit-btn">Log ind</button>
-                <button type="button" onclick="showPublicSite()" style="margin-top:10px; width:100%; padding:10px; border:none; background:none; cursor:pointer; color:#666; text-decoration:underline;">Tilbage til forside</button>
+                <button type="button" onclick="showPublicSite()" style="margin-top:10px; width:100%; padding:10px; border:none; background:none; cursor:pointer; color:#666; text-decoration:underline;">Tilbage / Nazad</button>
             </form>
         </div>
     </div>
@@ -546,22 +545,6 @@
         // SPROG SYSTEM (Oversættelser)
         // ---------------------------------------------------------
         const translations = {
-            da: {
-                nav_home: "Forside", nav_services: "Tjenester", nav_about: "Om Os", nav_book: "Book Møde", nav_admin: "Admin",
-                hero_title: "Velkommen til ArFiAnKA", hero_desc: "Professionel hjemmepleje og trygge online møder for ældre, ledet med hjertet og høj faglighed.",
-                hero_btn_book: "Book et online møde", hero_btn_help: "Se vores hjælp",
-                srv_title: "Vi hjælper med alt", 
-                srv_1_title: "Online Tryghedsmøde", srv_1_desc: "En samtale over computer/tablet om helbred, trivsel eller praktiske udfordringer.",
-                srv_2_title: "Praktisk & Personlig Pleje", srv_2_desc: "Hjælp til indkøb, madlavning, og personlig hygiejne med respekt og værdighed.",
-                srv_3_title: "Sundhedsfaglig Rådgivning", srv_3_desc: "Autoriseret vurdering, medicinhåndtering og dialog med kommunen/lægen.",
-                about_title: "Mød vores CEO", about_role: "CEO, Grundlægger & Autoriseret Sygeplejerske",
-                about_p1: "Uddannet fra Malmö Universitet med mange års erfaring fra både Sverige og Serbien, bl.a. på Thoraxkirurgisk afdeling (SUS Lund) og Hemsjukvården i Helsingborg.",
-                about_p2: "\"Uanset om der er brug for praktisk hjælp eller et trygt online møde, sikrer jeg og mit team, at de ældre er i de absolut bedste hænder med faglighed og varme i fokus.\"",
-                book_title: "Book et online møde / hjælp", book_sub: "Intet login kræves. Udfyld formularen, så ringer vi dig op.",
-                form_name: "Fulde Navn", form_phone: "Telefonnummer", form_subject: "Hvad drejer det sig om?",
-                form_opt_1: "Vælg...", form_opt_2: "Online Møde", form_opt_3: "Praktisk Hjælp", form_opt_4: "Personlig Pleje",
-                form_msg: "Evt. besked", form_btn: "Send Forespørgsel"
-            },
             en: {
                 nav_home: "Home", nav_services: "Services", nav_about: "About Us", nav_book: "Book Meeting", nav_admin: "Admin",
                 hero_title: "Welcome to ArFiAnKA", hero_desc: "Professional home care and secure online meetings for the elderly, led with heart and high professionalism.",
@@ -605,7 +588,6 @@
                 }
             });
             
-            // Hvis nogle options skal opdateres manuelt (i select)
             document.getElementById('service').options[0].text = translations[lang]["form_opt_1"];
             document.getElementById('service').options[1].text = translations[lang]["form_opt_2"];
             document.getElementById('service').options[2].text = translations[lang]["form_opt_3"];
