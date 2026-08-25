@@ -114,9 +114,10 @@
             cursor: pointer;
         }
 
-        /* Hero Section med unik, kodet baggrund */
+        /* Hero Section */
         .hero {
             height: 100vh;
+            /* Standard-baggrund, hvis der ikke er uploadet noget */
             background: radial-gradient(circle at center, rgba(195, 154, 92, 0.2) 0%, rgba(13, 44, 84, 0.85) 60%, #0d2c54 100%);
             display: flex;
             flex-direction: column;
@@ -125,6 +126,7 @@
             text-align: center;
             color: white;
             padding: 0 20px;
+            transition: background 0.5s ease;
         }
 
         .hero h1 {
@@ -533,7 +535,6 @@
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <!-- Placeholder er nu fjernet for at holde koden hemmelig -->
                     <input type="password" id="adminPass" class="form-control" required>
                 </div>
                 <button type="submit" class="btn-solid submit-btn">Log ind</button>
@@ -590,7 +591,7 @@
                 
                 <!-- Rediger Billeder -->
                 <div class="admin-card">
-                    <h3 style="color: var(--primary-navy); margin-top:0;">1. Skift Billeder (Logo & Profil)</h3>
+                    <h3 style="color: var(--primary-navy); margin-top:0;">1. Skift Billeder</h3>
                     <div class="form-group">
                         <label>Upload nyt Logo</label>
                         <input type="file" id="uploadLogo" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'logo')">
@@ -598,6 +599,12 @@
                     <div class="form-group">
                         <label>Upload nyt Profilbillede ("Om os")</label>
                         <input type="file" id="uploadProfile" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'profile')">
+                    </div>
+                    <!-- NY KNAP TIL AT UPLOADE BAGGRUND -->
+                    <div class="form-group">
+                        <label>Upload ny Baggrund (Forside)</label>
+                        <input type="file" id="uploadBackground" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'background')">
+                        <small style="color: #666;">Upload det billede du vil bruge, så lægger koden selv det mørkeblå filter hen over.</small>
                     </div>
                 </div>
                 
@@ -632,7 +639,7 @@
 
     <script>
         // ---------------------------------------------------------
-        // SPROG SYSTEM (Oversættelser)
+        // SPROG SYSTEM
         // ---------------------------------------------------------
         const translations = {
             en: {
@@ -679,15 +686,12 @@
             document.getElementById('service').options[2].text = translations[lang]["form_opt_3"];
             document.getElementById('service').options[3].text = translations[lang]["form_opt_4"];
             
-            // Re-apply local storage overrides for "About us" so it doesn't get overwritten by language change
             applyLocalEdits(); 
         }
 
         // ---------------------------------------------------------
-        // LOCAL CONTENT MANAGEMENT (Skift af tekst og billede via admin)
+        // LOCAL CONTENT MANAGEMENT (CMS)
         // ---------------------------------------------------------
-        
-        // Kører automatisk når siden loader for at hente dine gemte ændringer
         document.addEventListener("DOMContentLoaded", function() {
             applyLocalEdits();
         });
@@ -704,6 +708,16 @@
             const savedProfile = localStorage.getItem("arfianka_profile");
             if(savedProfile) {
                 document.getElementById('site-profile-pic').style.backgroundImage = `url(${savedProfile})`;
+            }
+
+            // Hent baggrundsbillede
+            const savedBackground = localStorage.getItem("arfianka_background");
+            const heroEl = document.getElementById('forside');
+            if(savedBackground) {
+                // Lægger det mørkeblå filter over det uploadede billede
+                heroEl.style.background = `linear-gradient(rgba(13, 44, 84, 0.75), rgba(13, 44, 84, 0.75)), url(${savedBackground}) center/cover`;
+            } else {
+                heroEl.style.background = `radial-gradient(circle at center, rgba(195, 154, 92, 0.2) 0%, rgba(13, 44, 84, 0.85) 60%, #0d2c54 100%)`;
             }
             
             // Hent "Om os" tekster
@@ -749,8 +763,11 @@
                 } else if (type === 'profile') {
                     localStorage.setItem("arfianka_profile", base64Image);
                     alert("Profilbillede er opdateret!");
+                } else if (type === 'background') {
+                    localStorage.setItem("arfianka_background", base64Image);
+                    alert("Baggrundsbillede er opdateret!");
                 }
-                applyLocalEdits(); // Opdater designet med det samme
+                applyLocalEdits(); 
             };
             reader.readAsDataURL(file);
         }
@@ -765,7 +782,7 @@
             localStorage.setItem("arfianka_about_role", role);
             localStorage.setItem("arfianka_about_p1", p1);
             localStorage.setItem("arfianka_about_p2", p2);
-            localStorage.setItem("arfianka_about_deleted", "false"); // Genopret hvis slettet
+            localStorage.setItem("arfianka_about_deleted", "false"); 
             
             applyLocalEdits();
             alert("Tekst er gemt og opdateret på hjemmesiden!");
@@ -834,12 +851,10 @@
         }
         
         function switchAdminTab(tab) {
-            // Håndter knapper
             document.getElementById('tab-btn-bookings').classList.remove('active');
             document.getElementById('tab-btn-settings').classList.remove('active');
             document.getElementById('tab-btn-' + tab).classList.add('active');
             
-            // Håndter visninger
             document.getElementById('admin-view-bookings').style.display = 'none';
             document.getElementById('admin-view-settings').style.display = 'none';
             document.getElementById('admin-view-' + tab).style.display = 'block';
@@ -890,7 +905,6 @@
                     alert("Forkert email eller adgangskode.");
                 }
             } else {
-                // NYT KODEORD HER!
                 if(email === "admin@arfianka.se" && pass === "Aria-26") {
                     showAdminDashboard();
                 } else {
