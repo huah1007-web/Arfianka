@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArFiAnKA | Professionel Ældrepleje & Online Møder</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-    <!-- Firebase SDK (v8 compat for nem single-file integration) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -16,6 +16,7 @@
             --primary-gold: #c39a5c;
             --bg-light: #fdfbf7;
             --text-dark: #333333;
+            --admin-bg: #f4f7f8;
         }
 
         body {
@@ -51,6 +52,12 @@
             height: 50px;
             border-radius: 5px;
         }
+        
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
 
         .nav-links {
             display: flex;
@@ -82,8 +89,23 @@
             background-color: white;
             color: var(--primary-navy) !important;
         }
+        
+        /* Language Selector */
+        .lang-select {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 13px;
+            cursor: pointer;
+            outline: none;
+        }
+        
+        .lang-select option {
+            color: var(--text-dark);
+        }
 
-        /* Mobile Menu Toggle */
         .menu-toggle {
             display: none;
             color: white;
@@ -145,7 +167,7 @@
             color: var(--primary-gold);
         }
 
-        /* Sections General */
+        /* Sections */
         .section {
             padding: 80px 5%;
             max-width: 1200px;
@@ -160,7 +182,7 @@
             text-transform: uppercase;
         }
 
-        /* Services Grid */
+        /* Services */
         .services-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -259,11 +281,49 @@
         }
 
         /* Admin Layout */
-        #admin-dashboard, #admin-login {
+        #admin-login, #admin-dashboard {
             display: none;
-            padding: 100px 5%;
             min-height: 100vh;
-            background-color: #f4f7f6;
+            background-color: var(--admin-bg);
+        }
+
+        #admin-login { padding: 100px 5%; }
+        #admin-dashboard { padding-bottom: 50px; }
+
+        .admin-topbar {
+            background-color: var(--primary-navy);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .admin-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .admin-content {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .admin-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .admin-header-flex h2 {
+            margin: 0;
+            color: var(--primary-navy);
+            font-size: 1.8rem;
         }
 
         .admin-box {
@@ -278,9 +338,9 @@
         .admin-table-container {
             background: white;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            overflow-x: auto; /* Scroll på mobil */
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow-x: auto;
         }
 
         table {
@@ -290,9 +350,10 @@
         }
 
         th, td {
-            padding: 12px;
+            padding: 15px 20px;
             text-align: left;
             border-bottom: 1px solid #eee;
+            font-size: 14px;
         }
 
         th {
@@ -309,11 +370,8 @@
         .status-ny { background: #f8d7da; color: #721c24; }
         .status-lost { background: #d4edda; color: #155724; }
 
-        /* Mobile Adjustments */
         @media (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
+            .menu-toggle { display: block; }
             .nav-links {
                 display: none;
                 flex-direction: column;
@@ -325,17 +383,9 @@
                 padding: 20px 0;
                 text-align: center;
             }
-            .nav-links.active {
-                display: flex;
-            }
-            .hero-buttons {
-                flex-direction: column;
-                width: 100%;
-            }
-            .hero-buttons a {
-                width: 100%;
-                box-sizing: border-box;
-            }
+            .nav-links.active { display: flex; }
+            .hero-buttons { flex-direction: column; width: 100%; }
+            .hero-buttons a { width: 100%; box-sizing: border-box; }
         }
     </style>
 </head>
@@ -347,83 +397,90 @@
             <div class="navbar-brand">
                 <img src="a3b1c038-c74c-49f8-801e-e018737ac673.jpg" alt="ArFiAnKA Logo">
             </div>
-            <div class="menu-toggle" onclick="toggleMobileMenu()">☰</div>
+            <div class="nav-right">
+                <select class="lang-select" onchange="changeLanguage(this.value)">
+                    <option value="da">Dansk</option>
+                    <option value="en">English</option>
+                    <option value="sr">Srpski</option>
+                </select>
+                <div class="menu-toggle" onclick="toggleMobileMenu()">☰</div>
+            </div>
             <div class="nav-links" id="navLinks">
-                <a href="#forside" onclick="toggleMobileMenu()">Forside</a>
-                <a href="#tjenester" onclick="toggleMobileMenu()">Tjenester</a>
-                <a href="#om-os" onclick="toggleMobileMenu()">Om Os</a>
-                <a href="#book" class="btn-outline" onclick="toggleMobileMenu()">Book Møde</a>
-                <a href="#" onclick="showAdminLogin()" style="color: var(--primary-gold);">Admin</a>
+                <a href="#forside" onclick="toggleMobileMenu()" data-i18n="nav_home">Forside</a>
+                <a href="#tjenester" onclick="toggleMobileMenu()" data-i18n="nav_services">Tjenester</a>
+                <a href="#om-os" onclick="toggleMobileMenu()" data-i18n="nav_about">Om Os</a>
+                <a href="#book" class="btn-outline" onclick="toggleMobileMenu()" data-i18n="nav_book">Book Møde</a>
+                <a href="#" onclick="showAdminLogin()" style="color: var(--primary-gold);" data-i18n="nav_admin">Admin</a>
             </div>
         </nav>
 
         <header class="hero" id="forside">
-            <h1>Velkommen til ArFiAnKA</h1>
-            <p>Professionel hjemmepleje og trygge online møder for ældre, ledet med hjertet og høj faglighed.</p>
+            <h1 data-i18n="hero_title">Velkommen til ArFiAnKA</h1>
+            <p data-i18n="hero_desc">Professionel hjemmepleje og trygge online møder for ældre, ledet med hjertet og høj faglighed.</p>
             <div class="hero-buttons">
-                <a href="#book" class="btn-solid">Book et online møde</a>
-                <a href="#tjenester" class="btn-solid" style="background: transparent;">Se vores hjælp</a>
+                <a href="#book" class="btn-solid" data-i18n="hero_btn_book">Book et online møde</a>
+                <a href="#tjenester" class="btn-solid" style="background: transparent;" data-i18n="hero_btn_help">Se vores hjælp</a>
             </div>
         </header>
 
         <section id="tjenester" class="section">
-            <h2 class="section-title">Vi hjælper med alt</h2>
+            <h2 class="section-title" data-i18n="srv_title">Vi hjælper med alt</h2>
             <div class="services-grid">
                 <div class="service-card">
-                    <h3>Online Tryghedsmøde</h3>
-                    <p>En samtale over computer/tablet om helbred, trivsel eller praktiske udfordringer.</p>
+                    <h3 data-i18n="srv_1_title">Online Tryghedsmøde</h3>
+                    <p data-i18n="srv_1_desc">En samtale over computer/tablet om helbred, trivsel eller praktiske udfordringer.</p>
                 </div>
                 <div class="service-card">
-                    <h3>Praktisk & Personlig Pleje</h3>
-                    <p>Hjælp til indkøb, madlavning, og personlig hygiejne med respekt og værdighed.</p>
+                    <h3 data-i18n="srv_2_title">Praktisk & Personlig Pleje</h3>
+                    <p data-i18n="srv_2_desc">Hjælp til indkøb, madlavning, og personlig hygiejne med respekt og værdighed.</p>
                 </div>
                 <div class="service-card">
-                    <h3>Sundhedsfaglig Rådgivning</h3>
-                    <p>Autoriseret vurdering, medicinhåndtering og dialog med kommunen/lægen.</p>
+                    <h3 data-i18n="srv_3_title">Sundhedsfaglig Rådgivning</h3>
+                    <p data-i18n="srv_3_desc">Autoriseret vurdering, medicinhåndtering og dialog med kommunen/lægen.</p>
                 </div>
             </div>
         </section>
 
         <section id="om-os" class="section" style="background-color: var(--bg-light);">
-            <h2 class="section-title">Mød vores CEO</h2>
+            <h2 class="section-title" data-i18n="about_title">Mød vores CEO</h2>
             <div class="about-container">
                 <div class="about-image"></div>
                 <div class="about-content">
                     <h2>Kristina Ciric Ahmed</h2>
-                    <div class="title-gold">CEO, Grundlægger & Autoriseret Sygeplejerske</div>
-                    <p>Uddannet fra Malmö Universitet med mange års erfaring fra både Sverige og Serbien, bl.a. på Thoraxkirurgisk afdeling (SUS Lund) og Hemsjukvården i Helsingborg.</p>
-                    <p><em>"Uanset om der er brug for praktisk hjælp eller et trygt online møde, sikrer jeg og mit team, at de ældre er i de absolut bedste hænder med faglighed og varme i fokus."</em></p>
+                    <div class="title-gold" data-i18n="about_role">CEO, Grundlægger & Autoriseret Sygeplejerske</div>
+                    <p data-i18n="about_p1">Uddannet fra Malmö Universitet med mange års erfaring fra både Sverige og Serbien, bl.a. på Thoraxkirurgisk afdeling (SUS Lund) og Hemsjukvården i Helsingborg.</p>
+                    <p><em data-i18n="about_p2">"Uanset om der er brug for praktisk hjælp eller et trygt online møde, sikrer jeg og mit team, at de ældre er i de absolut bedste hænder med faglighed og varme i fokus."</em></p>
                 </div>
             </div>
         </section>
 
         <section id="book" class="booking-section">
-            <h2 class="section-title">Book et online møde / hjælp</h2>
+            <h2 class="section-title" data-i18n="book_title">Book et online møde / hjælp</h2>
             <div class="booking-form">
-                <p style="text-align: center; margin-bottom: 20px;">Intet login kræves. Udfyld formularen, så ringer vi dig op.</p>
+                <p style="text-align: center; margin-bottom: 20px;" data-i18n="book_sub">Intet login kræves. Udfyld formularen, så ringer vi dig op.</p>
                 <form id="bookingForm" onsubmit="submitBooking(event)">
                     <div class="form-group">
-                        <label>Fulde Navn</label>
+                        <label data-i18n="form_name">Fulde Navn</label>
                         <input type="text" id="name" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label>Telefonnummer</label>
+                        <label data-i18n="form_phone">Telefonnummer</label>
                         <input type="tel" id="phone" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label>Hvad drejer det sig om?</label>
+                        <label data-i18n="form_subject">Hvad drejer det sig om?</label>
                         <select id="service" class="form-control" required>
-                            <option value="">Vælg...</option>
-                            <option value="Online Møde">Online Møde</option>
-                            <option value="Praktisk Hjælp">Praktisk Hjælp</option>
-                            <option value="Personlig Pleje">Personlig Pleje</option>
+                            <option value="" data-i18n="form_opt_1">Vælg...</option>
+                            <option value="Online Møde" data-i18n="form_opt_2">Online Møde</option>
+                            <option value="Praktisk Hjælp" data-i18n="form_opt_3">Praktisk Hjælp</option>
+                            <option value="Personlig Pleje" data-i18n="form_opt_4">Personlig Pleje</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Evt. besked</label>
+                        <label data-i18n="form_msg">Evt. besked</label>
                         <textarea id="message" rows="3" class="form-control"></textarea>
                     </div>
-                    <button type="submit" class="btn-solid submit-btn" id="submitBtn">Send Forespørgsel</button>
+                    <button type="submit" class="btn-solid submit-btn" id="submitBtn" data-i18n="form_btn">Send Forespørgsel</button>
                 </form>
             </div>
         </section>
@@ -444,7 +501,7 @@
                     <input type="email" id="adminEmail" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label>Adgangskode</label>
+                    <label>Password</label>
                     <input type="password" id="adminPass" class="form-control" required>
                 </div>
                 <button type="submit" class="btn-solid submit-btn">Log ind</button>
@@ -453,47 +510,112 @@
         </div>
     </div>
 
-    <!-- ADMIN DASHBOARD (Virkelig Firebase Data) -->
+    <!-- ADMIN DASHBOARD -->
     <div id="admin-dashboard">
-        <nav class="navbar" style="position:relative; margin-bottom: 30px; border-radius: 10px;">
-            <div class="navbar-brand">
-                <span style="color: white; font-weight: bold; font-size:20px;">ArFiAnKA ADMIN</span>
-            </div>
-            <div class="nav-links" style="display:flex;">
-                <a href="#" onclick="logoutAdmin()">Log ud</a>
-            </div>
-        </nav>
-
-        <div class="admin-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-            <h2 style="color: var(--primary-navy);">Dine Bookinger</h2>
+        <div class="admin-topbar">
+            <div class="admin-brand">ArFiAnKA ADMIN</div>
+            <a href="#" onclick="logoutAdmin()" style="color: white; text-decoration: none; font-size: 14px;">Log ud</a>
         </div>
-
-        <div class="admin-table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Dato</th>
-                        <th>Navn</th>
-                        <th>Telefon</th>
-                        <th>Tjeneste</th>
-                        <th>Besked</th>
-                        <th>Status</th>
-                        <th>Handling</th>
-                    </tr>
-                </thead>
-                <tbody id="bookingsTableBody">
-                    <!-- Hentes fra Firebase -->
-                </tbody>
-            </table>
+        <div class="admin-content">
+            <div class="admin-header-flex">
+                <h2>Oversigt over Bookinger fra Firebase</h2>
+                <p>Nye bookinger vil dukke op her, når du kobler Firebase til.</p>
+            </div>
+            <div class="admin-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dato</th>
+                            <th>Navn</th>
+                            <th>Telefon</th>
+                            <th>Tjeneste</th>
+                            <th>Status</th>
+                            <th>Handling</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsTableBody">
+                        <tr><td colspan='6' style="text-align:center; padding: 30px; color: #666;">Data hentes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
         // ---------------------------------------------------------
-        // 1. FIREBASE OPSÆTNING (INDSÆT DINE KODER HER)
+        // SPROG SYSTEM (Oversættelser)
+        // ---------------------------------------------------------
+        const translations = {
+            da: {
+                nav_home: "Forside", nav_services: "Tjenester", nav_about: "Om Os", nav_book: "Book Møde", nav_admin: "Admin",
+                hero_title: "Velkommen til ArFiAnKA", hero_desc: "Professionel hjemmepleje og trygge online møder for ældre, ledet med hjertet og høj faglighed.",
+                hero_btn_book: "Book et online møde", hero_btn_help: "Se vores hjælp",
+                srv_title: "Vi hjælper med alt", 
+                srv_1_title: "Online Tryghedsmøde", srv_1_desc: "En samtale over computer/tablet om helbred, trivsel eller praktiske udfordringer.",
+                srv_2_title: "Praktisk & Personlig Pleje", srv_2_desc: "Hjælp til indkøb, madlavning, og personlig hygiejne med respekt og værdighed.",
+                srv_3_title: "Sundhedsfaglig Rådgivning", srv_3_desc: "Autoriseret vurdering, medicinhåndtering og dialog med kommunen/lægen.",
+                about_title: "Mød vores CEO", about_role: "CEO, Grundlægger & Autoriseret Sygeplejerske",
+                about_p1: "Uddannet fra Malmö Universitet med mange års erfaring fra både Sverige og Serbien, bl.a. på Thoraxkirurgisk afdeling (SUS Lund) og Hemsjukvården i Helsingborg.",
+                about_p2: "\"Uanset om der er brug for praktisk hjælp eller et trygt online møde, sikrer jeg og mit team, at de ældre er i de absolut bedste hænder med faglighed og varme i fokus.\"",
+                book_title: "Book et online møde / hjælp", book_sub: "Intet login kræves. Udfyld formularen, så ringer vi dig op.",
+                form_name: "Fulde Navn", form_phone: "Telefonnummer", form_subject: "Hvad drejer det sig om?",
+                form_opt_1: "Vælg...", form_opt_2: "Online Møde", form_opt_3: "Praktisk Hjælp", form_opt_4: "Personlig Pleje",
+                form_msg: "Evt. besked", form_btn: "Send Forespørgsel"
+            },
+            en: {
+                nav_home: "Home", nav_services: "Services", nav_about: "About Us", nav_book: "Book Meeting", nav_admin: "Admin",
+                hero_title: "Welcome to ArFiAnKA", hero_desc: "Professional home care and secure online meetings for the elderly, led with heart and high professionalism.",
+                hero_btn_book: "Book an online meeting", hero_btn_help: "See our services",
+                srv_title: "We help with everything", 
+                srv_1_title: "Online Safety Meeting", srv_1_desc: "A conversation via computer/tablet about health, well-being, or practical challenges.",
+                srv_2_title: "Practical & Personal Care", srv_2_desc: "Help with shopping, cooking, and personal hygiene with respect and dignity.",
+                srv_3_title: "Health Counseling", srv_3_desc: "Authorized assessment, medication management, and dialogue with the municipality/doctor.",
+                about_title: "Meet our CEO", about_role: "CEO, Founder & Registered Nurse",
+                about_p1: "Graduated from Malmö University with many years of experience from both Sweden and Serbia, including the Thoracic Surgery Department (SUS Lund) and Home Care in Helsingborg.",
+                about_p2: "\"Whether practical help or a safe online meeting is needed, my team and I ensure that the elderly are in the absolute best hands with professionalism and warmth in focus.\"",
+                book_title: "Book an online meeting / help", book_sub: "No login required. Fill out the form, and we will call you back.",
+                form_name: "Full Name", form_phone: "Phone Number", form_subject: "What is this regarding?",
+                form_opt_1: "Select...", form_opt_2: "Online Meeting", form_opt_3: "Practical Help", form_opt_4: "Personal Care",
+                form_msg: "Additional message", form_btn: "Send Request"
+            },
+            sr: {
+                nav_home: "Početna", nav_services: "Usluge", nav_about: "O nama", nav_book: "Zakaži", nav_admin: "Admin",
+                hero_title: "Dobrodošli u ArFiAnKA", hero_desc: "Profesionalna kućna nega i sigurni onlajn sastanci za starije, vođeni srcem i visokom stručnošću.",
+                hero_btn_book: "Zakaži onlajn sastanak", hero_btn_help: "Naše usluge",
+                srv_title: "Pomažemo u svemu", 
+                srv_1_title: "Onlajn sastanak za sigurnost", srv_1_desc: "Razgovor preko računara/tableta o zdravlju, blagostanju ili praktičnim izazovima.",
+                srv_2_title: "Praktična i lična nega", srv_2_desc: "Pomoć pri kupovini, kuvanju i ličnoj higijeni sa poštovanjem i dostojanstvom.",
+                srv_3_title: "Zdravstveno savetovanje", srv_3_desc: "Ovlašćena procena, upravljanje lekovima i dijalog sa opštinom/lekarom.",
+                about_title: "Upoznajte našeg direktora", about_role: "Direktor, osnivač i ovlašćena medicinska sestra",
+                about_p1: "Diplomirala na Univerzitetu u Malmeu sa dugogodišnjim iskustvom iz Švedske i Srbije, uključujući Odeljenje torakalne hirurgije (SUS Lund) i Kućnu negu u Helsingborgu.",
+                about_p2: "\"Bilo da je potrebna praktična pomoć ili siguran onlajn sastanak, moj tim i ja osiguravamo da su stariji u apsolutno najboljim rukama sa fokusom na stručnost i toplinu.\"",
+                book_title: "Zakažite onlajn sastanak / pomoć", book_sub: "Nije potrebna prijava. Popunite formular i mi ćemo vas pozvati.",
+                form_name: "Puno ime", form_phone: "Broj telefona", form_subject: "O čemu se radi?",
+                form_opt_1: "Izaberite...", form_opt_2: "Onlajn sastanak", form_opt_3: "Praktična pomoć", form_opt_4: "Lična nega",
+                form_msg: "Dodatna poruka", form_btn: "Pošalji zahtev"
+            }
+        };
+
+        function changeLanguage(lang) {
+            const elements = document.querySelectorAll("[data-i18n]");
+            elements.forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+            
+            // Hvis nogle options skal opdateres manuelt (i select)
+            document.getElementById('service').options[0].text = translations[lang]["form_opt_1"];
+            document.getElementById('service').options[1].text = translations[lang]["form_opt_2"];
+            document.getElementById('service').options[2].text = translations[lang]["form_opt_3"];
+            document.getElementById('service').options[3].text = translations[lang]["form_opt_4"];
+        }
+
+        // ---------------------------------------------------------
+        // FIREBASE OPSÆTNING
         // ---------------------------------------------------------
         const firebaseConfig = {
-            // UDFYLD DISSE MED DINE FIREBASE CREDENTIALS FRA CONSOLE
             apiKey: "DIN_API_KEY",
             authDomain: "dit-projekt.firebaseapp.com",
             projectId: "dit-projekt",
@@ -502,7 +624,6 @@
             appId: "1:123456789:web:abcdef"
         };
         
-        // Initialiser Firebase (kun hvis konfigureret)
         let db, auth;
         if(firebaseConfig.apiKey !== "DIN_API_KEY") {
             firebase.initializeApp(firebaseConfig);
@@ -513,7 +634,7 @@
         }
 
         // ---------------------------------------------------------
-        // 2. UI NAVIGATION (Mobil menu og skift af sider)
+        // UI NAVIGATION
         // ---------------------------------------------------------
         function toggleMobileMenu() {
             const nav = document.getElementById('navLinks');
@@ -529,8 +650,6 @@
 
         function showAdminLogin() {
             document.getElementById('public-site').style.display = 'none';
-            
-            // Hvis firebase er sat op, check om vi allerede er logget ind
             if (auth && auth.currentUser) {
                 showAdminDashboard();
             } else {
@@ -544,16 +663,15 @@
             document.getElementById('public-site').style.display = 'none';
             document.getElementById('admin-login').style.display = 'none';
             document.getElementById('admin-dashboard').style.display = 'block';
-            fetchBookings(); // Hent data når dashboardet åbnes
+            fetchBookings(); 
         }
 
         // ---------------------------------------------------------
-        // 3. BOOKING FUNKTION (Skriv til Firestore)
+        // BOOKING & ADMIN
         // ---------------------------------------------------------
         async function submitBooking(event) {
             event.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.innerText = "Sender...";
             btn.disabled = true;
 
             const bookingData = {
@@ -574,17 +692,12 @@
                     alert("Der skete en fejl: " + error.message);
                 }
             } else {
-                alert("DEMO-MODE: Booking registreret lokalt! (Opsæt Firebase for at gemme rigtigt).");
+                alert("DEMO-MODE: Booking registreret!");
                 event.target.reset();
             }
-            
-            btn.innerText = "Send Forespørgsel";
             btn.disabled = false;
         }
 
-        // ---------------------------------------------------------
-        // 4. ADMIN FUNKTIONER (Log ind, Log ud, Læs fra Firestore)
-        // ---------------------------------------------------------
         async function loginAdmin(event) {
             event.preventDefault();
             const email = document.getElementById('adminEmail').value;
@@ -598,7 +711,6 @@
                     alert("Forkert email eller adgangskode.");
                 }
             } else {
-                // Demo login hvis firebase mangler
                 if(email === "admin@arfianka.se" && pass === "1234") {
                     showAdminDashboard();
                 } else {
@@ -614,39 +726,28 @@
 
         function fetchBookings() {
             const tbody = document.getElementById('bookingsTableBody');
-            
             if(db) {
-                tbody.innerHTML = "<tr><td colspan='7'>Henter data fra Firebase...</td></tr>";
                 db.collection("bookings").orderBy("dato", "desc").onSnapshot((snapshot) => {
                     tbody.innerHTML = "";
-                    snapshot.forEach((doc) => {
-                        const data = doc.data();
-                        renderTableRow(doc.id, data, tbody);
-                    });
+                    if(snapshot.empty) tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Ingen bookinger.</td></tr>";
+                    snapshot.forEach((doc) => renderTableRow(doc.id, doc.data(), tbody));
                 });
             } else {
-                // Demo data
-                tbody.innerHTML = "";
-                renderTableRow("demo1", { dato: new Date().toISOString(), navn: "Jens Jensen", telefon: "11223344", tjeneste: "Online Møde", besked: "Gerne på mandag", status: "Ny" }, tbody);
+                setTimeout(() => {
+                    tbody.innerHTML = "";
+                    renderTableRow("demo1", { dato: new Date().toISOString(), navn: "Jens Jensen", telefon: "11223344", tjeneste: "Online Møde", status: "Ny" }, tbody);
+                }, 1000);
             }
         }
 
         function renderTableRow(id, data, tbody) {
             const tr = document.createElement('tr');
-            const dateObj = new Date(data.dato);
-            const dateStr = dateObj.toLocaleDateString('da-DK', {day: '2-digit', month: 'short', hour:'2-digit', minute:'2-digit'});
+            const dateStr = new Date(data.dato).toLocaleDateString('da-DK', {day: '2-digit', month: 'short', hour:'2-digit', minute:'2-digit'});
             const badgeClass = data.status === "Ny" ? "status-ny" : "status-lost";
-            
             tr.innerHTML = `
-                <td>${dateStr}</td>
-                <td>${data.navn}</td>
-                <td>${data.telefon}</td>
-                <td>${data.tjeneste}</td>
-                <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${data.besked || '-'}</td>
+                <td>${dateStr}</td><td>${data.navn}</td><td>${data.telefon}</td><td>${data.tjeneste}</td>
                 <td><span class="status-badge ${badgeClass}">${data.status}</span></td>
-                <td>
-                    ${data.status === "Ny" ? `<button onclick="markAsDone('${id}')" style="background:var(--primary-navy); color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Marker Løst</button>` : 'Løst'}
-                </td>
+                <td>${data.status === "Ny" ? `<button onclick="markAsDone('${id}')" style="background:var(--primary-navy); color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Løst</button>` : 'Løst'}</td>
             `;
             tbody.appendChild(tr);
         }
@@ -655,7 +756,7 @@
             if(db) {
                 await db.collection("bookings").doc(id).update({ status: "Løst" });
             } else {
-                alert("Status opdateret (i demo mode)");
+                alert("Status opdateret (demo mode)");
                 showAdminDashboard();
             }
         }
