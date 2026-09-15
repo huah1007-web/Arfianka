@@ -1016,7 +1016,7 @@
                 alert("Booking saved and email sent. / Rezervacija je sačuvana i email je poslat.");
                 event.target.reset();
             } catch (error) {
-                alert("Error / Greška: " + error.message);
+                const detail = (error && (error.text || error.message)) || JSON.stringify(error) || "Unknown error"; console.error("Booking/EmailJS error:", error); alert("Error / Greška: " + detail);
             }
             
             btn.disabled = false;
@@ -1024,7 +1024,8 @@
             btn.innerText = translations[currentLang]["form_btn"];
         }
 
-        const ADMIN_EMAIL="admin@arfianka.se";
+        const ADMIN_EMAIL="kucna.nega.arfianka@gmail.com";
+        const ADMIN_UID="YFkzMKYpkObxxijAM3mRK8tR6sC2";
         let currentAccess={role:null,name:'',email:'',uid:''};
         let staffCreatorApp=null;
 
@@ -1033,7 +1034,7 @@
         function clearAccess(){currentAccess={role:null,name:'',email:'',uid:''};['arfianka_role','arfianka_name','arfianka_email','arfianka_uid'].forEach(k=>sessionStorage.removeItem(k));}
 
         async function loadFirebaseRole(user){
-            if(user.email&&user.email.toLowerCase()===ADMIN_EMAIL)return {role:'admin',name:'Administrator',active:true};
+            if ((user.email && user.email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase()) || user.uid === ADMIN_UID) return {role:'admin',name:'Administrator',active:true};
             const snap=await db.collection('staff').doc(user.uid).get();
             if(!snap.exists)throw new Error('No staff role assigned / Nema dodeljene uloge');
             const data=snap.data();
@@ -1063,7 +1064,7 @@
             }catch(error){
                 console.error('Firebase login error:',error);
                 try{await auth.signOut();}catch(e){}
-                alert('Login failed / Prijava nije uspela: '+(error.message||error));
+                alert('Login failed / Prijava nije uspela: '+(error.code||'')+' '+(error.message||error));
             }
         }
 
