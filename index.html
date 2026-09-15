@@ -1,1054 +1,114 @@
 <!DOCTYPE html>
 <html lang="sr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArFiAnKA | Profesionalna kućna nega i onlajn sastanci</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-    <!-- Firebase SDK (v8 compat for direct in-browser script execution) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    
-    <style>
-        :root {
-            --primary-navy: #0d2c54;
-            --primary-gold: #c39a5c;
-            --bg-light: #fdfbf7;
-            --text-dark: #333333;
-            --admin-bg: #f4f7f8;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArFiAnKA | Profesionalna kucna nega i onlajn sastanci</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 
-        body {
-            font-family: 'Open Sans', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-light);
-            color: var(--text-dark);
-            scroll-behavior: smooth;
-        }
+  <!-- Firebase SDK v8. Existing Firebase setup is preserved. -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-        h1, h2, h3, h4 {
-            font-family: 'Playfair Display', serif;
-            font-weight: 600;
-        }
+  <!-- EmailJS browser SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
-        /* Navbar */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 5%;
-            background-color: rgba(13, 44, 84, 0.95);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            box-sizing: border-box;
-            backdrop-filter: blur(5px);
-        }
-
-        .navbar-brand img {
-            height: 50px;
-            border-radius: 5px;
-            object-fit: contain;
-        }
-        
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary-gold);
-        }
-
-        .btn-outline {
-            border: 2px solid white;
-            padding: 8px 20px;
-            border-radius: 30px;
-        }
-        
-        .btn-outline:hover {
-            background-color: white;
-            color: var(--primary-navy) !important;
-        }
-        
-        /* Language Selector */
-        .lang-select {
-            background-color: transparent;
-            color: white;
-            border: 1px solid white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 13px;
-            cursor: pointer;
-            outline: none;
-        }
-        
-        .lang-select option {
-            color: var(--text-dark);
-        }
-
-        .menu-toggle {
-            display: none;
-            color: white;
-            font-size: 28px;
-            cursor: pointer;
-        }
-
-        /* Hero Section */
-        .hero {
-            height: 100vh;
-            background: radial-gradient(circle at center, rgba(195, 154, 92, 0.2) 0%, rgba(13, 44, 84, 0.85) 60%, #0d2c54 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: white;
-            padding: 0 20px;
-            transition: background 0.5s ease;
-        }
-
-        .hero h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        .hero p {
-            font-size: clamp(1rem, 2vw, 1.2rem);
-            max-width: 700px;
-            line-height: 1.6;
-            margin-bottom: 40px;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .btn-solid {
-            background-color: var(--primary-gold);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 2px solid var(--primary-gold);
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 14px;
-        }
-
-        .btn-solid:hover {
-            background-color: transparent;
-            color: var(--primary-gold);
-        }
-
-        /* Sections */
-        .section {
-            padding: 80px 5%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: clamp(2rem, 4vw, 2.5rem);
-            color: var(--primary-navy);
-            margin-bottom: 50px;
-            text-transform: uppercase;
-        }
-
-        /* Services */
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-        }
-
-        .service-card {
-            background: white;
-            padding: 30px;
-            text-align: center;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            border-bottom: 4px solid var(--primary-gold);
-        }
-
-        .service-card h3 {
-            color: var(--primary-navy);
-            font-size: 1.3rem;
-        }
-
-        /* About Us */
-        .about-container {
-            display: flex;
-            flex-wrap: wrap;
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        }
-
-        .about-image {
-            flex: 1 1 400px;
-            background: url('Kri.jpg') center top/cover;
-            min-height: 400px;
-        }
-
-        .about-content {
-            flex: 1.5 1 400px;
-            padding: 40px 5%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .about-content h2 {
-            font-size: 2rem;
-            color: var(--primary-navy);
-            margin: 0 0 5px 0;
-        }
-
-        .title-gold {
-            color: var(--primary-gold);
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            margin-bottom: 20px;
-        }
-
-        /* Booking Form */
-        .booking-section {
-            background-color: var(--primary-navy);
-            color: white;
-            padding: 80px 5%;
-        }
-
-        .booking-section .section-title {
-            color: white;
-        }
-
-        .booking-form {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            color: var(--text-dark);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            background-color: #f9f9f9;
-            font-family: inherit;
-        }
-        
-        .submit-btn {
-            width: 100%;
-        }
-
-        /* Admin Layout */
-        #admin-login, #admin-dashboard {
-            display: none;
-            min-height: 100vh;
-            background-color: var(--admin-bg);
-        }
-
-        #admin-login { padding: 100px 5%; }
-        #admin-dashboard { padding-bottom: 50px; }
-
-        .admin-topbar {
-            background-color: var(--primary-navy);
-            padding: 15px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-        }
-
-        .admin-brand {
-            font-family: 'Playfair Display', serif;
-            font-size: 22px;
-            font-weight: bold;
-        }
-
-        .admin-content {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        
-        .admin-nav-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .admin-nav-tabs button {
-            padding: 10px 20px;
-            border: none;
-            background-color: #ddd;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 5px;
-            transition: 0.3s;
-        }
-        
-        .admin-nav-tabs button.active {
-            background-color: var(--primary-gold);
-            color: white;
-        }
-
-        .admin-header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .admin-header-flex h2 {
-            margin: 0;
-            color: var(--primary-navy);
-            font-size: 1.8rem;
-        }
-
-        .admin-box {
-            max-width: 400px;
-            margin: 50px auto;
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .admin-card {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
-        
-        .admin-service-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #f9f9f9;
-            padding: 10px 15px;
-            margin-bottom: 8px;
-            border-radius: 5px;
-            border: 1px solid #eee;
-            font-size: 14px;
-        }
-        
-        .admin-service-item .action-btns button {
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-left: 5px;
-        }
-        .btn-edit { background: var(--primary-navy); }
-        .btn-delete { background: #dc3545; }
-
-        .admin-table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 600px;
-        }
-
-        th, td {
-            padding: 15px 20px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-        }
-
-        th {
-            background-color: var(--primary-navy);
-            color: white;
-        }
-
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .status-ny { background: #f8d7da; color: #721c24; }
-        .status-lost { background: #d4edda; color: #155724; }
-
-        @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 70px;
-                left: 0;
-                width: 100%;
-                background-color: rgba(13, 44, 84, 0.98);
-                padding: 20px 0;
-                text-align: center;
-            }
-            .nav-links.active { display: flex; }
-            .hero-buttons { flex-direction: column; width: 100%; }
-            .hero-buttons a { width: 100%; box-sizing: border-box; }
-        }
-    </style>
+  <style>
+    :root{--navy:#0d2c54;--gold:#c39a5c;--light:#fdfbf7;--dark:#333;--admin:#f4f7f8;--red:#dc3545;--green:#198754}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Open Sans',sans-serif;margin:0;background:var(--light);color:var(--dark)}
+    h1,h2,h3,h4{font-family:'Playfair Display',serif}.navbar{display:flex;justify-content:space-between;align-items:center;padding:15px 5%;background:rgba(13,44,84,.96);position:fixed;width:100%;top:0;z-index:1000}.navbar-brand img{height:50px;border-radius:5px}.nav-right,.nav-links{display:flex;align-items:center;gap:20px}.nav-links a{color:white;text-decoration:none;font-size:13px;text-transform:uppercase;font-weight:600}.nav-links a:hover{color:var(--gold)}.btn-outline{border:2px solid white;padding:8px 20px;border-radius:30px}.lang-select{background:transparent;color:white;border:1px solid white;padding:6px 10px;border-radius:5px}.lang-select option{color:#333}.menu-toggle{display:none;color:white;font-size:28px;cursor:pointer}
+    .hero{min-height:100vh;background:radial-gradient(circle at center,rgba(195,154,92,.2) 0%,rgba(13,44,84,.85) 60%,#0d2c54 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;color:#fff;padding:90px 20px 30px}.hero h1{font-size:clamp(2rem,5vw,3.5rem);text-transform:uppercase}.hero p{font-size:clamp(1rem,2vw,1.2rem);max-width:700px;line-height:1.6}.hero-buttons{display:flex;gap:15px;flex-wrap:wrap;justify-content:center}.btn-solid{background:var(--gold);color:#fff;padding:13px 25px;border-radius:30px;text-decoration:none;font-weight:bold;text-transform:uppercase;border:2px solid var(--gold);cursor:pointer}.btn-solid:hover{filter:brightness(.95)}.btn-solid:disabled{opacity:.55;cursor:not-allowed}.btn-danger{background:var(--red);border-color:var(--red)}.btn-small{padding:7px 11px;border-radius:5px;font-size:12px;text-transform:none}
+    .section{padding:80px 5%;max-width:1200px;margin:auto}.section-title{text-align:center;font-size:clamp(2rem,4vw,2.5rem);color:var(--navy);margin-bottom:50px;text-transform:uppercase}.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:30px}.service-card{background:#fff;padding:30px;text-align:center;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,.05);border-bottom:4px solid var(--gold)}.service-card h3{color:var(--navy)}
+    .about-container{display:flex;flex-wrap:wrap;background:#fff;border-radius:15px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.08)}.about-image{flex:1 1 400px;background:url('Kri.jpg') center top/cover;min-height:400px}.about-content{flex:1.5 1 400px;padding:40px 5%;display:flex;flex-direction:column;justify-content:center}.about-content h2{color:var(--navy)}.title-gold{color:var(--gold);font-weight:bold;text-transform:uppercase;font-size:.85rem}
+    .booking-section{background:var(--navy);color:#fff;padding:80px 5%}.booking-section .section-title{color:#fff}.booking-form{max-width:600px;margin:auto;background:#fff;padding:40px;border-radius:15px;color:var(--dark)}.form-group{margin-bottom:20px}.form-group label{display:block;margin-bottom:8px;font-weight:600}.form-control{width:100%;padding:14px;border:1px solid #ddd;border-radius:8px;background:#f9f9f9;font:inherit}.submit-btn{width:100%}.form-message{display:none;margin-top:16px;padding:13px;border-radius:8px;white-space:pre-wrap}.msg-success{display:block;background:#d4edda;color:#155724}.msg-warning{display:block;background:#fff3cd;color:#664d03}.msg-error{display:block;background:#f8d7da;color:#721c24}
+    #admin-login,#admin-dashboard{display:none;min-height:100vh;background:var(--admin)}#admin-login{padding:100px 5%}.admin-box{max-width:430px;margin:50px auto;background:#fff;padding:40px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,.1)}.admin-topbar{background:var(--navy);padding:15px 5%;display:flex;justify-content:space-between;color:#fff}.admin-content{max-width:1200px;margin:40px auto;padding:0 20px}.admin-nav-tabs{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}.admin-nav-tabs button{padding:10px 20px;border:0;border-radius:5px;cursor:pointer}.admin-nav-tabs button.active{background:var(--gold);color:#fff}.admin-card{background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.05);margin-bottom:30px}.admin-table-container{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:750px}th,td{padding:13px;text-align:left;border-bottom:1px solid #eee;font-size:14px}th{background:var(--navy);color:#fff}.status-badge{padding:5px 10px;border-radius:20px;font-size:12px;font-weight:bold}.status-new{background:#f8d7da;color:#721c24}.status-done{background:#d4edda;color:#155724}.action-buttons{display:flex;gap:7px;flex-wrap:wrap}.admin-service-item{display:flex;justify-content:space-between;align-items:center;background:#f9f9f9;padding:10px 15px;margin-bottom:8px;border-radius:5px}.configuration-note{background:#fff3cd;color:#664d03;padding:12px;border-radius:7px;font-size:14px}
+    footer{background:#081a33;color:#fff;text-align:center;padding:30px 20px}@media(max-width:768px){.menu-toggle{display:block}.nav-links{display:none;position:absolute;top:78px;left:0;width:100%;background:rgba(13,44,84,.99);padding:20px;flex-direction:column}.nav-links.active{display:flex}.hero-buttons{flex-direction:column;width:100%}.booking-form{padding:25px}.admin-card{padding:20px}}
+  </style>
 </head>
 <body>
+<div id="public-site">
+  <nav class="navbar">
+    <div class="navbar-brand"><img src="a3b1c038-c74c-49f8-801e-e018737ac673.jpg" alt="ArFiAnKA Logo" id="site-logo"></div>
+    <div class="nav-right"><select class="lang-select" onchange="changeLanguage(this.value)" id="languageSelector"><option value="sr" selected>Srpski</option><option value="en">English</option></select><div class="menu-toggle" onclick="toggleMobileMenu()">&#9776;</div></div>
+    <div class="nav-links" id="navLinks"><a href="#forside" data-i18n="nav_home">Pocetna</a><a href="#tjenester" data-i18n="nav_services">Usluge</a><a href="#om-os" data-i18n="nav_about">O nama</a><a href="#book" class="btn-outline" data-i18n="nav_book">Zakazi</a><a href="#" onclick="showAdminLogin();return false" style="color:var(--gold)" data-i18n="nav_admin">Admin</a></div>
+  </nav>
+  <header class="hero" id="forside"><h1 data-i18n="hero_title">Dobrodosli u ArFiAnKA</h1><p data-i18n="hero_desc">Profesionalna kucna nega i sigurni onlajn sastanci za starije, vodjeni srcem i visokom strucnoscu.</p><div class="hero-buttons"><a href="#book" class="btn-solid" data-i18n="hero_btn_book">Zakazi onlajn sastanak</a><a href="#tjenester" class="btn-solid" data-i18n="hero_btn_help">Nase usluge</a></div></header>
+  <section id="tjenester" class="section"><h2 class="section-title" data-i18n="srv_title">Pomazemo u svemu</h2><div class="services-grid"><div class="service-card"><h3>Onlajn sastanak za sigurnost</h3><p>Razgovor o zdravlju, blagostanju ili prakticnim izazovima.</p></div><div class="service-card"><h3>Prakticna i licna nega</h3><p>Pomoc pri kupovini, kuvanju i licnoj higijeni.</p></div><div class="service-card"><h3>Zdravstveno savetovanje</h3><p>Procena, upravljanje lekovima i dijalog sa lekarom.</p></div></div></section>
+  <section id="om-os" class="section"><h2 class="section-title" data-i18n="about_title">Upoznajte naseg direktora</h2><div class="about-container"><div class="about-image" id="site-profile-pic"></div><div class="about-content"><h2 id="about-name">Kristina Ciric Ahmed</h2><div class="title-gold" id="about-role">Direktor, osnivac i ovlascena medicinska sestra</div><p id="about-p1">Diplomirala na Univerzitetu u Malmeu sa dugogodisnjim iskustvom iz Svedske i Srbije.</p><p><em id="about-p2">Bilo da je potrebna prakticna pomoc ili siguran onlajn sastanak, moj tim i ja osiguravamo strucnost i toplinu.</em></p></div></div></section>
+  <section id="book" class="booking-section"><h2 class="section-title" data-i18n="book_title">Zakazite onlajn sastanak / pomoc</h2><div class="booking-form"><p data-i18n="book_sub">Nije potrebna prijava. Popunite formular i mi cemo vas pozvati.</p><form id="bookingForm" onsubmit="submitBooking(event)"><div class="form-group"><label data-i18n="form_name">Puno ime</label><input id="name" class="form-control" required></div><div class="form-group"><label data-i18n="form_phone">Broj telefona</label><input id="phone" type="tel" class="form-control" required></div><div class="form-group"><label data-i18n="form_subject">O cemu se radi?</label><select id="service" class="form-control" required></select></div><div class="form-group"><label data-i18n="form_msg">Dodatna poruka</label><textarea id="message" rows="3" class="form-control"></textarea></div><button id="submitBtn" class="btn-solid submit-btn" type="submit" data-i18n="form_btn">Posalji zahtev</button><div id="bookingResult" class="form-message" role="status"></div></form></div></section>
+  <footer><img src="a3b1c038-c74c-49f8-801e-e018737ac673.jpg" alt="Logo" id="footer-logo" style="height:40px"><p>ArFiAnKA - Kucna nega i pomoc starijima &copy; 2026</p></footer>
+</div>
 
-    <!-- PUBLIC SITE -->
-    <div id="public-site">
-        <nav class="navbar">
-            <div class="navbar-brand">
-                <img src="a3b1c038-c74c-49f8-801e-e018737ac673.jpg" alt="ArFiAnKA Logo" id="site-logo">
-            </div>
-            <div class="nav-right">
-                <select class="lang-select" onchange="changeLanguage(this.value)" id="languageSelector">
-                    <option value="sr" selected>Srpski</option>
-                    <option value="en">English</option>
-                </select>
-                <div class="menu-toggle" onclick="toggleMobileMenu()">☰</div>
-            </div>
-            <div class="nav-links" id="navLinks">
-                <a href="#forside" onclick="toggleMobileMenu()" data-i18n="nav_home">Početna</a>
-                <a href="#tjenester" onclick="toggleMobileMenu()" data-i18n="nav_services">Usluge</a>
-                <a href="#om-os" onclick="toggleMobileMenu()" data-i18n="nav_about">O nama</a>
-                <a href="#book" class="btn-outline" onclick="toggleMobileMenu()" data-i18n="nav_book">Zakaži</a>
-                <a href="#" onclick="showAdminLogin()" style="color: var(--primary-gold);" data-i18n="nav_admin">Admin</a>
-            </div>
-        </nav>
+<div id="admin-login"><div class="admin-box"><h2>Admin Login / Prijava</h2><form onsubmit="loginAdmin(event)"><div class="form-group"><label>Email</label><input type="email" id="adminEmail" class="form-control" required></div><div class="form-group"><label>Password / Lozinka</label><input type="password" id="adminPass" class="form-control" required></div><button class="btn-solid submit-btn" type="submit">Login / Prijava</button><button type="button" onclick="showPublicSite()" style="margin-top:10px;width:100%;padding:10px;border:0;background:none;cursor:pointer">Back / Nazad</button><div id="loginResult" class="form-message"></div></form></div></div>
 
-        <header class="hero" id="forside">
-            <h1 data-i18n="hero_title">Dobrodošli u ArFiAnKA</h1>
-            <p data-i18n="hero_desc">Profesionalna kućna nega i sigurni onlajn sastanci za starije, vođeni srcem i visokom stručnošću.</p>
-            <div class="hero-buttons">
-                <a href="#book" class="btn-solid" data-i18n="hero_btn_book">Zakaži onlajn sastanak</a>
-                <a href="#tjenester" class="btn-solid" style="background: transparent;" data-i18n="hero_btn_help">Naše usluge</a>
-            </div>
-        </header>
-
-        <section id="tjenester" class="section">
-            <h2 class="section-title" data-i18n="srv_title">Pomažemo u svemu</h2>
-            <div class="services-grid">
-                <div class="service-card">
-                    <h3 data-i18n="srv_1_title">Onlajn sastanak za sigurnost</h3>
-                    <p data-i18n="srv_1_desc">Razgovor preko računara/tableta o zdravlju, blagostanju ili praktičnim izazovima.</p>
-                </div>
-                <div class="service-card">
-                    <h3 data-i18n="srv_2_title">Praktična i lična nega</h3>
-                    <p data-i18n="srv_2_desc">Pomoć pri kupovini, kuvanju i ličnoj higijeni sa poštovanjem i dostojanstvom.</p>
-                </div>
-                <div class="service-card">
-                    <h3 data-i18n="srv_3_title">Zdravstveno savetovanje</h3>
-                    <p data-i18n="srv_3_desc">Ovlašćena procena, upravljanje lekovima i dijalog sa opštinom/lekarom.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="om-os" class="section" style="background-color: var(--bg-light);">
-            <h2 class="section-title" data-i18n="about_title">Upoznajte našeg direktora</h2>
-            <div class="about-container">
-                <div class="about-image" id="site-profile-pic"></div>
-                <div class="about-content">
-                    <h2 id="about-name">Kristina Ciric Ahmed</h2>
-                    <div class="title-gold" data-i18n="about_role" id="about-role">Direktor, osnivač i ovlašćena medicinska sestra</div>
-                    <p data-i18n="about_p1" id="about-p1">Diplomirala na Univerzitetu u Malmeu sa dugogodišnjim iskustvom iz Švedske i Srbije, uključujući Odeljenje torakalne hirurgije (SUS Lund) i Kućnu negu u Helsingborgu.</p>
-                    <p><em data-i18n="about_p2" id="about-p2">"Bilo da je potrebna praktična pomoć ili siguran onlajn sastanak, moj tim i ja osiguravamo da su stariji u apsolutno najboljim rukama sa fokusom na stručnost i toplinu."</em></p>
-                </div>
-            </div>
-        </section>
-
-        <section id="book" class="booking-section">
-            <h2 class="section-title" data-i18n="book_title">Zakažite onlajn sastanak / pomoć</h2>
-            <div class="booking-form">
-                <p style="text-align: center; margin-bottom: 20px;" data-i18n="book_sub">Nije potrebna prijava. Popunite formular i mi ćemo vas pozvati.</p>
-                <form id="bookingForm" onsubmit="submitBooking(event)">
-                    <div class="form-group">
-                        <label data-i18n="form_name">Puno ime</label>
-                        <input type="text" id="name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label data-i18n="form_phone">Broj telefona</label>
-                        <input type="tel" id="phone" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label data-i18n="form_subject">O čemu se radi?</label>
-                        <select id="service" class="form-control" required>
-                            <!-- Dynamically loaded -->
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label data-i18n="form_msg">Dodatna poruka</label>
-                        <textarea id="message" rows="3" class="form-control"></textarea>
-                    </div>
-                    <button type="submit" class="btn-solid submit-btn" id="submitBtn" data-i18n="form_btn">Pošalji zahtev</button>
-                </form>
-            </div>
-        </section>
-
-        <footer style="background:#081a33; color:white; text-align:center; padding:30px 20px;">
-            <img src="a3b1c038-c74c-49f8-801e-e018737ac673.jpg" alt="Logo" id="footer-logo" style="height: 40px; border-radius:5px; margin-bottom:10px; object-fit: contain;">
-            <p style="font-size: 14px;">ArFiAnKA - Kućna nega i pomoć starijima &copy; 2026</p>
-        </footer>
+<div id="admin-dashboard">
+  <div class="admin-topbar"><strong>ArFiAnKA ADMIN</strong><a href="#" onclick="logoutAdmin();return false" style="color:white">Logout / Odjavi se</a></div>
+  <div class="admin-content">
+    <div class="admin-nav-tabs"><button id="tab-btn-bookings" class="active" onclick="switchAdminTab('bookings')">Bookings / Rezervacije</button><button id="tab-btn-settings" onclick="switchAdminTab('settings')">Settings / Podesavanja</button></div>
+    <div id="admin-view-bookings"><div class="admin-card admin-table-container"><table><thead><tr><th>Date</th><th>Name</th><th>Phone</th><th>Service</th><th>Message</th><th>Status</th><th>Actions</th></tr></thead><tbody id="bookingsTableBody"><tr><td colspan="7">Loading...</td></tr></tbody></table></div></div>
+    <div id="admin-view-settings" style="display:none">
+      <div class="admin-card"><h3>EmailJS notification settings</h3><p class="configuration-note">Public Key and Service ID are already included. Enter the Template ID from EmailJS Email Templates and save. This is stored only in this browser.</p><div class="form-group"><label>Notification email</label><input id="editNotificationEmail" class="form-control" value="kucna.nega.arfianka@gmail.com"></div><div class="form-group"><label>EmailJS Public Key</label><input id="editEmailPublicKey" class="form-control" value="FIF_fc4Hv9FDLofhS"></div><div class="form-group"><label>EmailJS Service ID</label><input id="editEmailServiceId" class="form-control" value="service_m0ve9d9"></div><div class="form-group"><label>EmailJS Template ID</label><input id="editEmailTemplateId" class="form-control" placeholder="template_xxxxxxx"></div><button class="btn-solid" onclick="saveEmailSettings()">Save EmailJS settings</button></div>
+      <div class="admin-card"><h3>Edit services</h3><ul id="admin-services-list" style="list-style:none;padding:0"></ul><div style="display:flex;gap:10px"><input id="newServiceInput" class="form-control" placeholder="New service"><button class="btn-solid" onclick="addNewService()">Add</button></div></div>
     </div>
+  </div>
+</div>
 
-    <!-- ADMIN LOGIN -->
-    <div id="admin-login">
-        <div class="admin-box">
-            <h2 style="color: var(--primary-navy); text-align:center;">Admin Login / Prijava</h2>
-            <form onsubmit="loginAdmin(event)">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="adminEmail" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Password / Lozinka</label>
-                    <input type="password" id="adminPass" class="form-control" required>
-                </div>
-                <button type="submit" class="btn-solid submit-btn">Login / Prijava</button>
-                <button type="button" onclick="showPublicSite()" style="margin-top:10px; width:100%; padding:10px; border:none; background:none; cursor:pointer; color:#666; text-decoration:underline;">Back / Nazad</button>
-            </form>
-        </div>
-    </div>
+<script>
+// Existing Firebase setup preserved exactly.
+const firebaseConfig={apiKey:"AIzaSyDeKIZcW1Mvi4lYvaKRMOWdKk3ikFXwEAU",authDomain:"huah-198fc.firebaseapp.com",projectId:"huah-198fc",storageBucket:"huah-198fc.firebasestorage.app",messagingSenderId:"276648968284",appId:"1:276648968284:web:029616d17546aa7d662699",measurementId:"G-J8V7DB0DF7"};
+firebase.initializeApp(firebaseConfig);const db=firebase.firestore();const auth=firebase.auth();
 
-    <!-- ADMIN DASHBOARD -->
-    <div id="admin-dashboard">
-        <div class="admin-topbar">
-            <div class="admin-brand">ArFiAnKA ADMIN</div>
-            <a href="#" onclick="logoutAdmin()" style="color: white; text-decoration: none; font-size: 14px;">Logout / Odjavi se</a>
-        </div>
-        
-        <div class="admin-content">
-            <div class="admin-nav-tabs">
-                <button id="tab-btn-bookings" class="active" onclick="switchAdminTab('bookings')">Bookings / Rezervacije</button>
-                <button id="tab-btn-settings" onclick="switchAdminTab('settings')">Edit Website / Uredi sajt</button>
-            </div>
-            
-            <!-- Tab: BOOKINGS -->
-            <div id="admin-view-bookings">
-                <div class="admin-header-flex">
-                    <h2>Bookings Overview / Pregled rezervacija</h2>
-                    <p>Here you can see all inquiries. / Ovde možete videti sve upite.</p>
-                </div>
-                <div class="admin-card admin-table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date / Datum</th>
-                                <th>Name / Ime</th>
-                                <th>Phone / Telefon</th>
-                                <th>Service / Usluga</th>
-                                <th>Status</th>
-                                <th>Action / Akcija</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bookingsTableBody">
-                            <tr><td colspan='6' style="text-align:center; padding: 30px; color: #666;">Loading data... / Učitavanje podataka...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Tab: EDIT WEBSITE -->
-            <div id="admin-view-settings" style="display:none;">
-                <div class="admin-header-flex">
-                    <h2>Website Settings / Podešavanja sajta</h2>
-                    <p>Change images, dropdown categories, and text directly from here. / Menjajte slike, padajuće menije i tekst direktno odavde.</p>
-                </div>
-                
-                <div class="admin-card">
-                    <h3 style="color: var(--primary-navy); margin-top:0;">1. Change Images / Promeni slike</h3>
-                    <div class="form-group">
-                        <label>Upload new Logo / Otpremi novi logo</label>
-                        <input type="file" id="uploadLogo" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'logo')">
-                    </div>
-                    <div class="form-group">
-                        <label>Upload new Profile Picture / Otpremi novu profilnu sliku</label>
-                        <input type="file" id="uploadProfile" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'profile')">
-                    </div>
-                    <div class="form-group">
-                        <label>Upload new Background / Otpremi novu pozadinu</label>
-                        <input type="file" id="uploadBackground" accept="image/*" class="form-control" onchange="handleImageUpload(event, 'background')">
-                        <small style="color: #666;">Upload the image, the code will apply the dark blue filter. / Otpremite sliku, kod će automatski primeniti tamno plavi filter.</small>
-                    </div>
-                </div>
-                
-                <div class="admin-card">
-                    <h3 style="color: var(--primary-navy); margin-top:0;">2. Edit "About Us" text / Uredi tekst "O nama"</h3>
-                    <div class="form-group">
-                        <label>Name / Ime</label>
-                        <input type="text" id="editAboutName" class="form-control" value="Kristina Ciric Ahmed">
-                    </div>
-                    <div class="form-group">
-                        <label>Title/Role / Titula</label>
-                        <input type="text" id="editAboutRole" class="form-control" value="Direktor, osnivač i ovlašćena medicinska sestra">
-                    </div>
-                    <div class="form-group">
-                        <label>Description (Paragraph 1) / Opis (Pasus 1)</label>
-                        <textarea id="editAboutP1" rows="4" class="form-control">Diplomirala na Univerzitetu u Malmeu sa dugogodišnjim iskustvom iz Švedske i Srbije, uključujući Odeljenje torakalne hirurgije (SUS Lund) i Kućnu negu u Helsingborgu.</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Quote/Vision (Paragraph 2) / Citat (Pasus 2)</label>
-                        <textarea id="editAboutP2" rows="3" class="form-control">"Bilo da je potrebna praktična pomoć ili siguran onlajn sastanak, moj tim i ja osiguravamo da su stariji u apsolutno najboljim rukama sa fokusom na stručnost i toplinu."</textarea>
-                    </div>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button onclick="saveAboutText()" class="btn-solid">Save text changes / Sačuvaj izmene teksta</button>
-                        <button onclick="deleteAboutText()" class="btn-solid" style="background-color: #dc3545; border-color: #dc3545;">Delete About Us text / Obriši tekst 'O nama'</button>
-                    </div>
-                </div>
-                
-                <div class="admin-card">
-                    <h3 style="color: var(--primary-navy); margin-top:0;">3. Edit Services (Dropdown & Prices) / Uredi usluge (Padajući meni i cene)</h3>
-                    <p style="font-size: 14px; margin-bottom: 20px;">Options created here will appear in the booking dropdown. / Opcije koje ovde kreirate prikazaće se u padajućem meniju za zakazivanje.</p>
-                    
-                    <ul id="admin-services-list" style="list-style: none; padding: 0; margin-bottom: 20px;"></ul>
-                    
-                    <div class="form-group" style="display: flex; gap: 10px;">
-                        <input type="text" id="newServiceInput" class="form-control" placeholder="E.g. Doctor visit - 2500 RSD / Npr. Poseta lekaru - 2500 RSD">
-                        <button type="button" onclick="addNewService()" class="btn-solid" style="padding: 10px 20px;">Add / Dodaj</button>
-                    </div>
-                </div>
+// EmailJS public browser configuration. Never place a Private Key or password here.
+const DEFAULT_EMAIL_SETTINGS={publicKey:"FIF_fc4Hv9FDLofhS",serviceId:"service_m0ve9d9",templateId:"",recipient:"kucna.nega.arfianka@gmail.com"};
+function getEmailSettings(){return {...DEFAULT_EMAIL_SETTINGS,...JSON.parse(localStorage.getItem("arfianka_emailjs")||"{}")}}
+function initializeEmailJS(){const c=getEmailSettings();if(c.publicKey&&window.emailjs)emailjs.init({publicKey:c.publicKey})}
+initializeEmailJS();
 
-            </div>
-        </div>
-    </div>
+const translations={en:{nav_home:"Home",nav_services:"Services",nav_about:"About Us",nav_book:"Book Meeting",nav_admin:"Admin",hero_title:"Welcome to ArFiAnKA",hero_desc:"Professional home care and secure online meetings for the elderly.",hero_btn_book:"Book an online meeting",hero_btn_help:"Our services",srv_title:"We help with everything",about_title:"Meet our CEO",book_title:"Book an online meeting / help",book_sub:"No login required. Fill out the form and we will call you.",form_name:"Full name",form_phone:"Phone number",form_subject:"What is this regarding?",form_msg:"Additional message",form_btn:"Send request",select:"Select..."},sr:{nav_home:"Pocetna",nav_services:"Usluge",nav_about:"O nama",nav_book:"Zakazi",nav_admin:"Admin",hero_title:"Dobrodosli u ArFiAnKA",hero_desc:"Profesionalna kucna nega i sigurni onlajn sastanci za starije.",hero_btn_book:"Zakazi onlajn sastanak",hero_btn_help:"Nase usluge",srv_title:"Pomazemo u svemu",about_title:"Upoznajte naseg direktora",book_title:"Zakazite onlajn sastanak / pomoc",book_sub:"Nije potrebna prijava. Popunite formular i mi cemo vas pozvati.",form_name:"Puno ime",form_phone:"Broj telefona",form_subject:"O cemu se radi?",form_msg:"Dodatna poruka",form_btn:"Posalji zahtev",select:"Izaberite..."}};
+let currentServices=JSON.parse(localStorage.getItem("arfianka_services")||'["Onlajn sastanak","Prakticna pomoc","Licna nega"]');
+function changeLanguage(lang){document.querySelectorAll("[data-i18n]").forEach(e=>{const k=e.dataset.i18n;if(translations[lang][k])e.textContent=translations[lang][k]});renderClientDropdown()}
+function renderClientDropdown(){const s=document.getElementById("service"),lang=document.getElementById("languageSelector").value;s.innerHTML=`<option value="">${translations[lang].select}</option>`;currentServices.forEach(x=>{const o=document.createElement("option");o.value=x;o.textContent=x;s.appendChild(o)})}
+function renderAdminServicesList(){const ul=document.getElementById("admin-services-list");ul.innerHTML="";currentServices.forEach((x,i)=>{const li=document.createElement("li");li.className="admin-service-item";li.innerHTML=`<span>${escapeHtml(x)}</span><button class="btn-solid btn-danger btn-small" onclick="deleteService(${i})">Delete / Obrisi</button>`;ul.appendChild(li)})}
+function addNewService(){const e=document.getElementById("newServiceInput"),v=e.value.trim();if(!v)return;currentServices.push(v);localStorage.setItem("arfianka_services",JSON.stringify(currentServices));e.value="";renderClientDropdown();renderAdminServicesList()}
+function deleteService(i){if(!confirm("Delete this service? / Obrisi ovu uslugu?"))return;currentServices.splice(i,1);localStorage.setItem("arfianka_services",JSON.stringify(currentServices));renderClientDropdown();renderAdminServicesList()}
+function showMessage(id,type,text){const e=document.getElementById(id);e.className="form-message "+type;e.textContent=text}
+function escapeHtml(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}
 
-    <script>
-        // ---------------------------------------------------------
-        // 1. FIREBASE INITIALIZATION WITH YOUR CREDENTIALS
-        // ---------------------------------------------------------
-        const firebaseConfig = {
-            apiKey: "AIzaSyDeKIZcW1Mvi4lYvaKRMOWdKk3ikFXwEAU",
-            authDomain: "huah-198fc.firebaseapp.com",
-            projectId: "huah-198fc",
-            storageBucket: "huah-198fc.firebasestorage.app",
-            messagingSenderId: "276648968284",
-            appId: "1:276648968284:web:029616d17546aa7d662699",
-            measurementId: "G-J8V7DB0DF7"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+async function submitBooking(event){
+  event.preventDefault();const btn=document.getElementById("submitBtn");btn.disabled=true;btn.textContent="Sending... / Slanje...";
+  const bookingData={navn:document.getElementById("name").value.trim(),telefon:document.getElementById("phone").value.trim(),tjeneste:document.getElementById("service").value,besked:document.getElementById("message").value.trim()||"Ingen besked / No message",status:"New / Novo",dato:new Date().toISOString()};
+  let saved=false;
+  try{
+    await db.collection("bookings").add(bookingData);saved=true;
+    const c=getEmailSettings();
+    if(!c.templateId)throw new Error("EmailJS Template ID is missing. Log in as admin, open Settings, enter the Template ID and save.");
+    if(!window.emailjs)throw new Error("EmailJS SDK could not be loaded.");
+    initializeEmailJS();
+    const response=await emailjs.send(c.serviceId,c.templateId,{to_email:c.recipient,to_name:"ArFiAnKA",navn:bookingData.navn,telefon:bookingData.telefon,tjeneste:bookingData.tjeneste,besked:bookingData.besked,dato:new Date(bookingData.dato).toLocaleString("da-DK"),reply_to:c.recipient});
+    console.log("EmailJS success",response.status,response.text);showMessage("bookingResult","msg-success","Booking gemt, og e-mailnotifikation er sendt. / Rezervacija je sacuvana i email je poslat.");event.target.reset();renderClientDropdown();
+  }catch(error){console.error("Booking/EmailJS error",error);const detail=error?.text||error?.message||String(error);showMessage("bookingResult",saved?"msg-warning":"msg-error",(saved?"Bookingen blev gemt i Firebase, men mailen blev ikke sendt.\n":"Bookingen kunne ikke gemmes.\n")+"Fejl: "+detail)}
+  finally{btn.disabled=false;btn.textContent=translations[document.getElementById("languageSelector").value].form_btn}
+}
 
-        // ---------------------------------------------------------
-        // 2. LANGUAGE SYSTEM
-        // ---------------------------------------------------------
-        const translations = {
-            en: {
-                nav_home: "Home", nav_services: "Services", nav_about: "About Us", nav_book: "Book Meeting", nav_admin: "Admin",
-                hero_title: "Welcome to ArFiAnKA", hero_desc: "Professional home care and secure online meetings for the elderly, led with heart and high professionalism.",
-                hero_btn_book: "Book an online meeting", hero_btn_help: "See our services",
-                srv_title: "We help with everything", 
-                srv_1_title: "Online Safety Meeting", srv_1_desc: "A conversation via computer/tablet about health, well-being, or practical challenges.",
-                srv_2_title: "Practical & Personal Care", srv_2_desc: "Help with shopping, cooking, and personal hygiene with respect and dignity.",
-                srv_3_title: "Health Counseling", srv_3_desc: "Authorized assessment, medication management, and dialogue with the municipality/doctor.",
-                about_title: "Meet our CEO", 
-                book_title: "Book an online meeting / help", book_sub: "No login required. Fill out the form, and we will call you back.",
-                form_name: "Full Name", form_phone: "Phone Number", form_subject: "What is this regarding?",
-                form_opt_1: "Select...",
-                form_msg: "Additional message", form_btn: "Send Request"
-            },
-            sr: {
-                nav_home: "Početna", nav_services: "Usluge", nav_about: "O nama", nav_book: "Zakaži", nav_admin: "Admin",
-                hero_title: "Dobrodošli u ArFiAnKA", hero_desc: "Profesionalna kućna nega i sigurni onlajn sastanci za starije, vođeni srcem i visokom stručnošću.",
-                hero_btn_book: "Zakaži onlajn sastanak", hero_btn_help: "Naše usluge",
-                srv_title: "Pomažemo u svemu", 
-                srv_1_title: "Onlajn sastanak za sigurnost", srv_1_desc: "Razgovor preko računara/tableta o zdravlju, blagostanju ili praktičnim izazovima.",
-                srv_2_title: "Praktična i lična nega", srv_2_desc: "Pomoć pri kupovini, kuvanju i ličnoj higijeni sa poštovanjem i dostojanstvom.",
-                srv_3_title: "Zdravstveno savetovanje", srv_3_desc: "Ovlašćena procena, upravljanje lekovima i dijalog sa opštinom/lekarom.",
-                about_title: "Upoznajte našeg direktora", 
-                book_title: "Zakažite onlajn sastanak / pomoć", book_sub: "Nije potrebna prijava. Popunite formular i mi ćemo vas pozvati.",
-                form_name: "Puno ime", form_phone: "Broj telefona", form_subject: "O čemu se radi?",
-                form_opt_1: "Izaberite...",
-                form_msg: "Dodatna poruka", form_btn: "Pošalji zahtev"
-            }
-        };
+function toggleMobileMenu(){document.getElementById("navLinks").classList.toggle("active")}
+function showPublicSite(){document.getElementById("public-site").style.display="block";document.getElementById("admin-login").style.display="none";document.getElementById("admin-dashboard").style.display="none";window.scrollTo(0,0)}
+function showAdminLogin(){document.getElementById("public-site").style.display="none";if(auth.currentUser)showAdminDashboard();else document.getElementById("admin-login").style.display="block";window.scrollTo(0,0)}
+function showAdminDashboard(){document.getElementById("public-site").style.display="none";document.getElementById("admin-login").style.display="none";document.getElementById("admin-dashboard").style.display="block";loadEmailSettings();renderAdminServicesList();fetchBookings()}
+function switchAdminTab(tab){["bookings","settings"].forEach(x=>{document.getElementById("admin-view-"+x).style.display=x===tab?"block":"none";document.getElementById("tab-btn-"+x).classList.toggle("active",x===tab)})}
+async function loginAdmin(event){event.preventDefault();try{await auth.signInWithEmailAndPassword(document.getElementById("adminEmail").value.trim(),document.getElementById("adminPass").value);showAdminDashboard()}catch(error){showMessage("loginResult","msg-error","Login error: "+error.message)}}
+async function logoutAdmin(){await auth.signOut();showPublicSite()}
 
-        function changeLanguage(lang) {
-            const elements = document.querySelectorAll("[data-i18n]");
-            elements.forEach(el => {
-                const key = el.getAttribute("data-i18n");
-                if (translations[lang] && translations[lang][key]) {
-                    el.innerText = translations[lang][key];
-                }
-            });
-            
-            const defaultOption = document.getElementById('service').options[0];
-            if(defaultOption) {
-                defaultOption.text = translations[lang]["form_opt_1"];
-            }
-            
-            document.getElementById('submitBtn').innerText = translations[lang]["form_btn"];
-            applyLocalEdits(); 
-        }
+let bookingsUnsubscribe=null;
+function fetchBookings(){if(bookingsUnsubscribe)bookingsUnsubscribe();const tbody=document.getElementById("bookingsTableBody");bookingsUnsubscribe=db.collection("bookings").orderBy("dato","desc").onSnapshot(snapshot=>{tbody.innerHTML="";if(snapshot.empty){tbody.innerHTML='<tr><td colspan="7">No bookings / Nema rezervacija</td></tr>';return}snapshot.forEach(doc=>renderTableRow(doc.id,doc.data(),tbody))},error=>{tbody.innerHTML=`<tr><td colspan="7" style="color:red">${escapeHtml(error.message)}</td></tr>`})}
+function renderTableRow(id,data,tbody){const isNew=String(data.status||"").includes("New")||String(data.status||"").includes("Novo");const tr=document.createElement("tr");tr.innerHTML=`<td>${escapeHtml(new Date(data.dato).toLocaleString("da-DK"))}</td><td>${escapeHtml(data.navn)}</td><td>${escapeHtml(data.telefon)}</td><td>${escapeHtml(data.tjeneste)}</td><td>${escapeHtml(data.besked)}</td><td><span class="status-badge ${isNew?"status-new":"status-done"}">${escapeHtml(data.status)}</span></td><td><div class="action-buttons">${isNew?`<button class="btn-solid btn-small" onclick="markAsDone('${id}')">Resolved</button>`:""}<button class="btn-solid btn-danger btn-small" onclick="deleteBooking('${id}')">Delete</button></div></td>`;tbody.appendChild(tr)}
+async function markAsDone(id){try{await db.collection("bookings").doc(id).update({status:"Resolved / Reseno"})}catch(error){alert("Update failed: "+error.message)}}
+async function deleteBooking(id){if(!auth.currentUser){alert("You must be logged in.");return}if(!confirm("Delete this booking permanently? / Trajno obrisati rezervaciju?"))return;try{await db.collection("bookings").doc(id).delete()}catch(error){alert("Delete failed: "+error.message)}}
 
-        // ---------------------------------------------------------
-        // 3. LOCAL CONTENT MANAGEMENT (CMS)
-        // ---------------------------------------------------------
-        let currentServices = ["Onlajn sastanak", "Praktična pomoć", "Lična nega"];
+function loadEmailSettings(){const c=getEmailSettings();document.getElementById("editNotificationEmail").value=c.recipient;document.getElementById("editEmailPublicKey").value=c.publicKey;document.getElementById("editEmailServiceId").value=c.serviceId;document.getElementById("editEmailTemplateId").value=c.templateId}
+function saveEmailSettings(){const c={recipient:document.getElementById("editNotificationEmail").value.trim(),publicKey:document.getElementById("editEmailPublicKey").value.trim(),serviceId:document.getElementById("editEmailServiceId").value.trim(),templateId:document.getElementById("editEmailTemplateId").value.trim()};localStorage.setItem("arfianka_emailjs",JSON.stringify(c));initializeEmailJS();alert("EmailJS settings saved in this browser. / Podesavanja su sacuvana.")}
 
-        document.addEventListener("DOMContentLoaded", function() {
-            applyLocalEdits();
-            const currentLang = document.getElementById('languageSelector').value;
-            changeLanguage(currentLang);
-        });
-        
-        function applyLocalEdits() {
-            const savedLogo = localStorage.getItem("arfianka_logo");
-            if(savedLogo) {
-                document.getElementById('site-logo').src = savedLogo;
-                document.getElementById('footer-logo').src = savedLogo;
-            }
-            
-            const savedProfile = localStorage.getItem("arfianka_profile");
-            if(savedProfile) {
-                document.getElementById('site-profile-pic').style.backgroundImage = `url(${savedProfile})`;
-            }
-
-            const savedBackground = localStorage.getItem("arfianka_background");
-            const heroEl = document.getElementById('forside');
-            if(savedBackground) {
-                heroEl.style.background = `linear-gradient(rgba(13, 44, 84, 0.75), rgba(13, 44, 84, 0.75)), url(${savedBackground}) center/cover`;
-            } else {
-                heroEl.style.background = `radial-gradient(circle at center, rgba(195, 154, 92, 0.2) 0%, rgba(13, 44, 84, 0.85) 60%, #0d2c54 100%)`;
-            }
-            
-            const aboutName = localStorage.getItem("arfianka_about_name");
-            const aboutRole = localStorage.getItem("arfianka_about_role");
-            const aboutP1 = localStorage.getItem("arfianka_about_p1");
-            const aboutP2 = localStorage.getItem("arfianka_about_p2");
-            const isDeleted = localStorage.getItem("arfianka_about_deleted");
-            
-            if (isDeleted === "true") {
-                document.getElementById('om-os').style.display = "none";
-            } else {
-                document.getElementById('om-os').style.display = "block";
-                if(aboutName) {
-                    document.getElementById('about-name').innerText = aboutName;
-                    document.getElementById('editAboutName').value = aboutName;
-                }
-                if(aboutRole) {
-                    document.getElementById('about-role').innerText = aboutRole;
-                    document.getElementById('editAboutRole').value = aboutRole;
-                }
-                if(aboutP1) {
-                    document.getElementById('about-p1').innerText = aboutP1;
-                    document.getElementById('editAboutP1').value = aboutP1;
-                }
-                if(aboutP2) {
-                    document.getElementById('about-p2').innerText = `"${aboutP2.replace(/"/g, '')}"`; 
-                    document.getElementById('editAboutP2').value = aboutP2;
-                }
-            }
-            
-            const savedServicesJSON = localStorage.getItem("arfianka_services");
-            if(savedServicesJSON) {
-                currentServices = JSON.parse(savedServicesJSON);
-            }
-            
-            renderAdminServicesList();
-            renderClientDropdown();
-        }
-
-        function handleImageUpload(event, type) {
-            const file = event.target.files[0];
-            if(!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const base64Image = e.target.result;
-                if (type === 'logo') {
-                    localStorage.setItem("arfianka_logo", base64Image);
-                    alert("Logo updated! / Logo je ažuriran!");
-                } else if (type === 'profile') {
-                    localStorage.setItem("arfianka_profile", base64Image);
-                    alert("Profile picture updated! / Profilna slika je ažurirana!");
-                } else if (type === 'background') {
-                    localStorage.setItem("arfianka_background", base64Image);
-                    alert("Background image updated! / Pozadinska slika je ažurirana!");
-                }
-                applyLocalEdits(); 
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        function saveAboutText() {
-            const name = document.getElementById('editAboutName').value;
-            const role = document.getElementById('editAboutRole').value;
-            const p1 = document.getElementById('editAboutP1').value;
-            const p2 = document.getElementById('editAboutP2').value;
-            
-            localStorage.setItem("arfianka_about_name", name);
-            localStorage.setItem("arfianka_about_role", role);
-            localStorage.setItem("arfianka_about_p1", p1);
-            localStorage.setItem("arfianka_about_p2", p2);
-            localStorage.setItem("arfianka_about_deleted", "false"); 
-            
-            applyLocalEdits();
-            alert("Text saved and updated! / Tekst je sačuvan i ažuriran!");
-        }
-        
-        function deleteAboutText() {
-            if(confirm("Delete 'About Us' section? / Da li ste sigurni da želite da obrišete sekciju 'O nama'?")) {
-                localStorage.setItem("arfianka_about_deleted", "true");
-                applyLocalEdits();
-                alert("The section is now hidden. / Sekcija je sada skrivena.");
-            }
-        }
-        
-        function renderAdminServicesList() {
-            const listEl = document.getElementById('admin-services-list');
-            listEl.innerHTML = '';
-            
-            if(currentServices.length === 0) {
-                listEl.innerHTML = '<li style="color:#666; font-style:italic;">No options created. Add one below. / Nema kreiranih opcija. Dodajte jednu ispod.</li>';
-                return;
-            }
-            
-            currentServices.forEach((service, index) => {
-                const li = document.createElement('li');
-                li.className = 'admin-service-item';
-                li.innerHTML = `
-                    <span>${service}</span>
-                    <div class="action-btns">
-                        <button class="btn-edit" onclick="editService(${index})">Edit / Uredi</button>
-                        <button class="btn-delete" onclick="deleteService(${index})">Delete / Obriši</button>
-                    </div>
-                `;
-                listEl.appendChild(li);
-            });
-        }
-        
-        function renderClientDropdown() {
-            const selectEl = document.getElementById('service');
-            const currentLang = document.getElementById('languageSelector').value;
-            const selectPlaceholder = translations[currentLang]["form_opt_1"] || "Izaberite...";
-            
-            selectEl.innerHTML = `<option value="">${selectPlaceholder}</option>`;
-            
-            currentServices.forEach(service => {
-                const opt = document.createElement('option');
-                opt.value = service;
-                opt.innerText = service;
-                selectEl.appendChild(opt);
-            });
-        }
-        
-        function addNewService() {
-            const inputEl = document.getElementById('newServiceInput');
-            const newService = inputEl.value.trim();
-            
-            if(newService !== '') {
-                currentServices.push(newService);
-                localStorage.setItem("arfianka_services", JSON.stringify(currentServices));
-                inputEl.value = '';
-                applyLocalEdits();
-            } else {
-                alert("Please enter a service name. / Molimo unesite naziv usluge.");
-            }
-        }
-        
-        function editService(index) {
-            const newValue = prompt("Edit service / Uredi uslugu:", currentServices[index]);
-            if (newValue !== null && newValue.trim() !== '') {
-                currentServices[index] = newValue.trim();
-                localStorage.setItem("arfianka_services", JSON.stringify(currentServices));
-                applyLocalEdits();
-            }
-        }
-        
-        function deleteService(index) {
-            if(confirm("Delete this option? / Da li želite da obrišete ovu opciju?")) {
-                currentServices.splice(index, 1);
-                localStorage.setItem("arfianka_services", JSON.stringify(currentServices));
-                applyLocalEdits();
-            }
-        }
-
-        // ---------------------------------------------------------
-        // 4. UI NAVIGATION
-        // ---------------------------------------------------------
-        function toggleMobileMenu() {
-            const nav = document.getElementById('navLinks');
-            nav.classList.toggle('active');
-        }
-
-        function showPublicSite() {
-            document.getElementById('public-site').style.display = 'block';
-            document.getElementById('admin-login').style.display = 'none';
-            document.getElementById('admin-dashboard').style.display = 'none';
-            window.scrollTo(0,0);
-        }
-
-        function showAdminLogin() {
-            document.getElementById('public-site').style.display = 'none';
-            if (auth.currentUser) {
-                showAdminDashboard();
-            } else {
-                document.getElementById('admin-login').style.display = 'block';
-                document.getElementById('admin-dashboard').style.display = 'none';
-            }
-            window.scrollTo(0,0);
-        }
-
-        function showAdminDashboard() {
-            document.getElementById('public-site').style.display = 'none';
-            document.getElementById('admin-login').style.display = 'none';
-            document.getElementById('admin-dashboard').style.display = 'block';
-            fetchBookings(); 
-        }
-        
-        function switchAdminTab(tab) {
-            document.getElementById('tab-btn-bookings').classList.remove('active');
-            document.getElementById('tab-btn-settings').classList.remove('active');
-            document.getElementById('tab-btn-' + tab).classList.add('active');
-            
-            document.getElementById('admin-view-bookings').style.display = 'none';
-            document.getElementById('admin-view-settings').style.display = 'none';
-            document.getElementById('admin-view-' + tab).style.display = 'block';
-        }
-
-        // ---------------------------------------------------------
-        // 5. FIREBASE INTEGRATED ACTIONS (Bookings & Auth)
-        // ---------------------------------------------------------
-        async function submitBooking(event) {
-            event.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerText = "Sending... / Slanje...";
-
-            const bookingData = {
-                navn: document.getElementById('name').value,
-                telefon: document.getElementById('phone').value,
-                tjeneste: document.getElementById('service').value,
-                besked: document.getElementById('message').value,
-                status: "New / Novo",
-                dato: new Date().toISOString()
-            };
-
-            try {
-                await db.collection("bookings").add(bookingData);
-                alert("Thank you! We will contact you shortly. / Hvala na upitu! Kontaktiraćemo vas uskoro.");
-                event.target.reset();
-            } catch (error) {
-                alert("Error / Greška: " + error.message);
-            }
-            
-            btn.disabled = false;
-            const currentLang = document.getElementById('languageSelector').value;
-            btn.innerText = translations[currentLang]["form_btn"];
-        }
-
-        async function loginAdmin(event) {
-            event.preventDefault();
-            const email = document.getElementById('adminEmail').value;
-            const pass = document.getElementById('adminPass').value;
-            
-            try {
-                await auth.signInWithEmailAndPassword(email, pass);
-                showAdminDashboard();
-            } catch(error) {
-                // Fallback til demo konto hvis den ikke er oprettet i Firebase Auth endnu
-                if(email === "admin@arfianka.se" && pass === "Aria-26") {
-                    showAdminDashboard();
-                } else {
-                    alert("Login error: " + error.message);
-                }
-            }
-        }
-
-        async function logoutAdmin() {
-            await auth.signOut();
-            showPublicSite();
-        }
-
-        function fetchBookings() {
-            const tbody = document.getElementById('bookingsTableBody');
-            
-            db.collection("bookings").orderBy("dato", "desc").onSnapshot((snapshot) => {
-                tbody.innerHTML = "";
-                if(snapshot.empty) {
-                    tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No bookings. / Nema rezervacija.</td></tr>";
-                    return;
-                }
-                snapshot.forEach((doc) => renderTableRow(doc.id, doc.data(), tbody));
-            }, (error) => {
-                tbody.innerHTML = `<tr><td colspan='6' style='text-align:center; color:red;'>Database error: ${error.message}</td></tr>`;
-            });
-        }
-
-        function renderTableRow(id, data, tbody) {
-            const tr = document.createElement('tr');
-            const dateStr = new Date(data.dato).toLocaleDateString('en-GB', {day: '2-digit', month: 'short', hour:'2-digit', minute:'2-digit'});
-            const badgeClass = data.status.includes("New") || data.status.includes("Novo") ? "status-ny" : "status-lost";
-            tr.innerHTML = `
-                <td>${dateStr}</td><td>${data.navn}</td><td>${data.telefon}</td><td>${data.tjeneste}</td>
-                <td><span class="status-badge ${badgeClass}">${data.status}</span></td>
-                <td>${data.status.includes("New") || data.status.includes("Novo") ? `<button onclick="markAsDone('${id}')" style="background:var(--primary-navy); color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Resolved / Rešeno</button>` : 'Resolved / Rešeno'}</td>
-            `;
-            tbody.appendChild(tr);
-        }
-
-        async function markAsDone(id) {
-            try {
-                await db.collection("bookings").doc(id).update({ status: "Resolved / Rešeno" });
-            } catch (error) {
-                alert("Error updating status: " + error.message);
-            }
-        }
-    </script>
+document.addEventListener("DOMContentLoaded",()=>{changeLanguage("sr");auth.onAuthStateChanged(user=>{if(!user&&document.getElementById("admin-dashboard").style.display==="block")showPublicSite()})});
+</script>
 </body>
 </html>
