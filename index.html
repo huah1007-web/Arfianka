@@ -747,7 +747,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
         emailjs.init({publicKey:"FIF_fc4HV9FDLofhS"});
-        const EMAIL_SERVICE="service_m0ve9d9", EMAIL_TEMPLATE="template_q8r1xwl", EMAIL_TO="kucna.nega.arfianka@gmail.com";
+        const EMAIL_SERVICE="service_m0ve9d9", EMAIL_TEMPLATE="template_q8r1xwl", EMAIL_TO="kucna.nega.arfianka@gmail.com", EMAIL_PUBLIC_KEY="FIF_fc4HV9FDLofhS";
 
         // ---------------------------------------------------------
         // 2. LANGUAGE SYSTEM
@@ -1013,7 +1013,7 @@
             try {
                 await db.collection("bookings").add(bookingData);
                 try {
-                    await emailjs.send(EMAIL_SERVICE,EMAIL_TEMPLATE,{to_email:EMAIL_TO,navn:bookingData.navn,telefon:bookingData.telefon,email:bookingData.email,reply_to:bookingData.email,tjeneste:bookingData.tjeneste,besked:bookingData.besked||"Ingen besked",dato:new Date(bookingData.dato).toLocaleString("da-DK")});
+                    await emailjs.send(EMAIL_SERVICE, EMAIL_TEMPLATE, {to_email:EMAIL_TO, to_name:"ArFiAnKA", from_name:bookingData.navn, from_email:bookingData.email, navn:bookingData.navn, telefon:bookingData.telefon, email:bookingData.email, customer_email:bookingData.email, reply_to:bookingData.email, tjeneste:bookingData.tjeneste, besked:bookingData.besked||"Ingen besked", message:bookingData.besked||"Ingen besked", dato:new Date(bookingData.dato).toLocaleString("da-DK")}, {publicKey:EMAIL_PUBLIC_KEY});
                     alert("Booking saved and email sent. / Rezervacija je sačuvana i email je poslat.");
                 } catch (emailError) {
                     console.error("EmailJS error:", emailError);
@@ -1149,6 +1149,16 @@
         let opts='<option value="">No image</option>'+lib.map(x=>`<option value="${xe(x.src)}">${xe(x.name)}</option>`).join('');if(document.getElementById('svcImage')){svcImage.innerHTML=opts;empImage.innerHTML=opts;modImage.innerHTML=opts;imageLibrary.innerHTML=lib.map(x=>`<div class="image-box"><img src="${xe(x.src)}"><input value="${xe(x.name)}" onchange="renameLib('${x.id}',this.value)"><div class="cms-actions"><button class="btn-small" onclick="assignLib('${x.id}','logo')">Logo</button><button class="btn-small" onclick="assignLib('${x.id}','hero')">Hero</button><button class="btn-small" onclick="assignLib('${x.id}','profile')">Profile</button><button class="btn-small btn-danger" onclick="deleteLib('${x.id}')">Delete</button></div></div>`).join('')}
         let logo=document.getElementById('site-logo'),profile=document.getElementById('site-profile-pic'),hero=document.getElementById('forside');logo.src=libSrc(layout.logo)||logo.src;logo.style.height=layout.logoHeight+'px';profile.style.backgroundImage=`url("${libSrc(layout.profile)||'Kri.jpg'}")`;profile.style.minHeight=layout.profileHeight+'px';profile.style.backgroundPosition=`${layout.profileX}% ${layout.profileY}%`;profile.style.backgroundSize=layout.profileFit;hero.style.height=layout.heroHeight+'px';if(libSrc(layout.hero))hero.style.background=`linear-gradient(rgba(13,44,84,.75),rgba(13,44,84,.75)),url("${libSrc(layout.hero)}") ${layout.heroX}% ${layout.heroY}%/${layout.heroZoom}% no-repeat`;if(document.getElementById('logoHeight')){for(let [id,v,u] of [['logoHeight',layout.logoHeight,'px'],['heroHeight',layout.heroHeight,'px'],['heroZoom',layout.heroZoom,'%'],['heroX',layout.heroX,'%'],['heroY',layout.heroY,'%'],['profileHeight',layout.profileHeight,'px'],['profileX',layout.profileX,'%'],['profileY',layout.profileY,'%']]){document.getElementById(id).value=v;document.getElementById(id+'Out').value=v+u}profileFit.value=layout.profileFit}}
         document.addEventListener('DOMContentLoaded',renderExtendedCms);
+
+        async function testEmailJSConnection(){
+            try{
+                const result=await emailjs.send(EMAIL_SERVICE,EMAIL_TEMPLATE,{to_email:EMAIL_TO,to_name:"ArFiAnKA",from_name:"ArFiAnKA test",from_email:EMAIL_TO,navn:"ArFiAnKA test",telefon:"-",email:EMAIL_TO,customer_email:EMAIL_TO,reply_to:EMAIL_TO,tjeneste:"EmailJS test",besked:"EmailJS connection test",message:"EmailJS connection test",dato:new Date().toLocaleString("da-DK")},{publicKey:EMAIL_PUBLIC_KEY});
+                alert("EmailJS test sent successfully. Status: "+result.status);
+            }catch(error){
+                console.error("EmailJS test failed",error);
+                alert("EmailJS test failed: "+((error&&(error.text||error.message))||String(error)));
+            }
+        }
     </script>
 </body>
 </html>
