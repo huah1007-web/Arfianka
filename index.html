@@ -644,6 +644,7 @@
             
             <!-- Tab: EDIT WEBSITE -->
             <div id="admin-view-settings" style="display:none;">
+                <div class="admin-card"><h3 style="color:var(--primary-navy);margin-top:0">Email notifications / Email obaveštenja</h3><p style="font-size:14px">Manage EmailJS settings and test both the admin notification and customer auto-reply. Passwords and private keys must not be entered here.</p><div class="cms-grid"><div><label>Service ID</label><input id="emailServiceId" class="form-control"></div><div><label>Public Key</label><input id="emailPublicKey" class="form-control"></div><div><label>Admin notification Template ID</label><input id="emailNotificationTemplateId" class="form-control"></div><div><label>Auto-Reply Template ID</label><input id="emailAutoReplyTemplateId" class="form-control"></div><div><label>Notification recipient</label><input id="emailToAddress" type="email" class="form-control"></div><div><label>Test customer email</label><input id="emailTestRecipient" type="email" class="form-control" placeholder="customer@example.com"></div></div><label style="display:block;margin:14px 0"><input id="emailAutoReplyEnabled" type="checkbox"> Send Auto-Reply to customer after booking</label><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn-solid" onclick="saveEmailConfiguration()">Save email settings</button><button class="btn-solid btn-edit" onclick="testAdminNotification()">Test admin email</button><button class="btn-solid btn-muted" onclick="testCustomerAutoReply()">Test Auto-Reply</button></div><div id="emailTestStatus" style="margin-top:14px;padding:12px;border-radius:7px;background:#f6f6f6">Not tested yet.</div></div>
                 <div class="admin-header-flex">
                     <h2>Website Settings / Podešavanja sajta</h2>
                     <p>Change images, dropdown categories, and text directly from here. / Menjajte slike, padajuće menije i tekst direktno odavde.</p>
@@ -746,8 +747,10 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
-        emailjs.init({publicKey:"FIF_fc4HV9FDLofhS"});
-        const EMAIL_SERVICE="service_m0ve9d9", EMAIL_TEMPLATE="template_q8r1xwl", EMAIL_TO="kucna.nega.arfianka@gmail.com", EMAIL_PUBLIC_KEY="FIF_fc4HV9FDLofhS";
+        const DEFAULT_EMAIL_CONFIG={serviceId:"service_m0ve9d9",notificationTemplateId:"template_q8r1xwl",autoReplyTemplateId:"template_wu2qsed",toEmail:"kucna.nega.arfianka@gmail.com",publicKey:"FIF_fc4HV9FDLofhS",sendAutoReply:true};
+        function getEmailConfig(){try{return {...DEFAULT_EMAIL_CONFIG,...JSON.parse(localStorage.getItem("arfianka_email_config")||"{}")}}catch(e){return {...DEFAULT_EMAIL_CONFIG}}}
+        function initEmailJS(){const c=getEmailConfig();if(window.emailjs&&c.publicKey)emailjs.init({publicKey:c.publicKey})}
+        initEmailJS();
 
         // ---------------------------------------------------------
         // 2. LANGUAGE SYSTEM
@@ -989,7 +992,7 @@
             fetchBookings();
         }
         
-        function switchAdminTab(tab){if(getCurrentRole()==='employee'&&tab!=='bookings')tab='bookings';['bookings','settings','services','content','images','employees'].forEach(n=>{const b=document.getElementById('tab-btn-'+n),v=document.getElementById('admin-view-'+n);if(b)b.classList.toggle('active',n===tab);if(v)v.style.display=n===tab?'block':'none'});if(tab==='employees')renderStaffAccounts();renderExtendedCms();}
+        function switchAdminTab(tab){if(getCurrentRole()==='employee'&&tab!=='bookings')tab='bookings';['bookings','settings','services','content','images','employees'].forEach(n=>{const b=document.getElementById('tab-btn-'+n),v=document.getElementById('admin-view-'+n);if(b)b.classList.toggle('active',n===tab);if(v)v.style.display=n===tab?'block':'none'});if(tab==='employees')renderStaffAccounts();if(tab==='settings')loadEmailConfiguration();renderExtendedCms();}
 
         // ---------------------------------------------------------
         // 5. FIREBASE INTEGRATED ACTIONS (Bookings & Auth)
@@ -1013,13 +1016,12 @@
             try {
                 await db.collection("bookings").add(bookingData);
                 try {
-                    await emailjs.send(EMAIL_SERVICE, EMAIL_TEMPLATE, {to_email:EMAIL_TO, to_name:"ArFiAnKA", from_name:bookingData.navn, from_email:bookingData.email, navn:bookingData.navn, telefon:bookingData.telefon, email:bookingData.email, customer_email:bookingData.email, reply_to:bookingData.email, tjeneste:bookingData.tjeneste, besked:bookingData.besked||"Ingen besked", message:bookingData.besked||"Ingen besked", dato:new Date(bookingData.dato).toLocaleString("da-DK")}, {publicKey:EMAIL_PUBLIC_KEY});
+                    const c=getEmailConfig();initEmailJS();
+                    const params={to_email:c.toEmail,to_name:"ArFiAnKA",from_name:bookingData.navn,from_email:bookingData.email,navn:bookingData.navn,telefon:bookingData.telefon,email:bookingData.email,customer_email:bookingData.email,reply_to:bookingData.email,tjeneste:bookingData.tjeneste,besked:bookingData.besked||"Ingen besked",message:bookingData.besked||"Ingen besked",dato:new Date(bookingData.dato).toLocaleString("da-DK")};
+                    await emailjs.send(c.serviceId,c.notificationTemplateId,params,{publicKey:c.publicKey});
+                    if(c.sendAutoReply&&c.autoReplyTemplateId){await emailjs.send(c.serviceId,c.autoReplyTemplateId,{...params,to_email:bookingData.email,to_name:bookingData.navn,reply_to:c.toEmail},{publicKey:c.publicKey});}
                     alert("Booking saved and email sent. / Rezervacija je sačuvana i email je poslat.");
-                } catch (emailError) {
-                    console.error("EmailJS error:", emailError);
-                    const emailDetail=(emailError&&(emailError.text||emailError.message))||String(emailError);
-                    alert("Booking saved in Firebase, but email notification failed: "+emailDetail);
-                }
+                } catch(emailError){console.error("EmailJS error:",emailError);alert("Booking saved in Firebase, but email notification failed: "+((emailError&&(emailError.text||emailError.message))||String(emailError)));}
                 event.target.reset();
             } catch (error) {
                 const detail=(error&&(error.text||error.message))||String(error);console.error(error);alert("Error / Greška: "+detail);
@@ -1150,15 +1152,13 @@
         let logo=document.getElementById('site-logo'),profile=document.getElementById('site-profile-pic'),hero=document.getElementById('forside');logo.src=libSrc(layout.logo)||logo.src;logo.style.height=layout.logoHeight+'px';profile.style.backgroundImage=`url("${libSrc(layout.profile)||'Kri.jpg'}")`;profile.style.minHeight=layout.profileHeight+'px';profile.style.backgroundPosition=`${layout.profileX}% ${layout.profileY}%`;profile.style.backgroundSize=layout.profileFit;hero.style.height=layout.heroHeight+'px';if(libSrc(layout.hero))hero.style.background=`linear-gradient(rgba(13,44,84,.75),rgba(13,44,84,.75)),url("${libSrc(layout.hero)}") ${layout.heroX}% ${layout.heroY}%/${layout.heroZoom}% no-repeat`;if(document.getElementById('logoHeight')){for(let [id,v,u] of [['logoHeight',layout.logoHeight,'px'],['heroHeight',layout.heroHeight,'px'],['heroZoom',layout.heroZoom,'%'],['heroX',layout.heroX,'%'],['heroY',layout.heroY,'%'],['profileHeight',layout.profileHeight,'px'],['profileX',layout.profileX,'%'],['profileY',layout.profileY,'%']]){document.getElementById(id).value=v;document.getElementById(id+'Out').value=v+u}profileFit.value=layout.profileFit}}
         document.addEventListener('DOMContentLoaded',renderExtendedCms);
 
-        async function testEmailJSConnection(){
-            try{
-                const result=await emailjs.send(EMAIL_SERVICE,EMAIL_TEMPLATE,{to_email:EMAIL_TO,to_name:"ArFiAnKA",from_name:"ArFiAnKA test",from_email:EMAIL_TO,navn:"ArFiAnKA test",telefon:"-",email:EMAIL_TO,customer_email:EMAIL_TO,reply_to:EMAIL_TO,tjeneste:"EmailJS test",besked:"EmailJS connection test",message:"EmailJS connection test",dato:new Date().toLocaleString("da-DK")},{publicKey:EMAIL_PUBLIC_KEY});
-                alert("EmailJS test sent successfully. Status: "+result.status);
-            }catch(error){
-                console.error("EmailJS test failed",error);
-                alert("EmailJS test failed: "+((error&&(error.text||error.message))||String(error)));
-            }
-        }
+        function loadEmailConfiguration(){const c=getEmailConfig();const set=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||""};set("emailServiceId",c.serviceId);set("emailPublicKey",c.publicKey);set("emailNotificationTemplateId",c.notificationTemplateId);set("emailAutoReplyTemplateId",c.autoReplyTemplateId);set("emailToAddress",c.toEmail);const test=document.getElementById("emailTestRecipient");if(test&&!test.value)test.value=c.toEmail;const enabled=document.getElementById("emailAutoReplyEnabled");if(enabled)enabled.checked=!!c.sendAutoReply;}
+        function saveEmailConfiguration(){const c={serviceId:emailServiceId.value.trim(),publicKey:emailPublicKey.value.trim(),notificationTemplateId:emailNotificationTemplateId.value.trim(),autoReplyTemplateId:emailAutoReplyTemplateId.value.trim(),toEmail:emailToAddress.value.trim(),sendAutoReply:emailAutoReplyEnabled.checked};localStorage.setItem("arfianka_email_config",JSON.stringify(c));initEmailJS();emailTestStatus.textContent="Email settings saved in this browser.";emailTestStatus.style.background="#d4edda";}
+        function emailTestParams(to){return {to_email:to,to_name:"ArFiAnKA test",from_name:"ArFiAnKA",from_email:getEmailConfig().toEmail,navn:"ArFiAnKA test",telefon:"-",email:to,customer_email:to,reply_to:getEmailConfig().toEmail,tjeneste:"EmailJS test",besked:"Test sent from the ArFiAnKA admin panel",message:"Test sent from the ArFiAnKA admin panel",dato:new Date().toLocaleString("da-DK")}}
+        async function runEmailTest(templateId,to,label){const c=getEmailConfig();emailTestStatus.textContent="Testing "+label+"...";emailTestStatus.style.background="#fff3cd";try{initEmailJS();const response=await emailjs.send(c.serviceId,templateId,emailTestParams(to),{publicKey:c.publicKey});emailTestStatus.textContent=label+" sent successfully. Status: "+response.status;emailTestStatus.style.background="#d4edda"}catch(error){console.error(label+" failed",error);emailTestStatus.textContent=label+" failed: "+((error&&(error.text||error.message))||String(error));emailTestStatus.style.background="#f8d7da"}}
+        async function testAdminNotification(){saveEmailConfiguration();const c=getEmailConfig();await runEmailTest(c.notificationTemplateId,c.toEmail,"Admin notification")}
+        async function testCustomerAutoReply(){saveEmailConfiguration();const c=getEmailConfig(),to=emailTestRecipient.value.trim();if(!to)return alert("Enter a test customer email");await runEmailTest(c.autoReplyTemplateId,to,"Customer Auto-Reply")}
+        document.addEventListener("DOMContentLoaded",loadEmailConfiguration);
     </script>
 </body>
 </html>
