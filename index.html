@@ -426,6 +426,7 @@
         }
         .status-ny { background: #f8d7da; color: #721c24; }
         .status-lost { background: #d4edda; color: #155724; }
+        .status-cancelled { background:#e2e3e5; color:#41464b; }
 
         @media (max-width: 768px) {
             .menu-toggle { display: block; }
@@ -1034,14 +1035,43 @@
 
         function renderTableRow(id, data, tbody) {
             const tr = document.createElement('tr');
-            const dateStr = new Date(data.dato).toLocaleDateString('en-GB', {day: '2-digit', month: 'short', hour:'2-digit', minute:'2-digit'});
-            const badgeClass = data.status.includes("New") || data.status.includes("Novo") ? "status-ny" : "status-lost";
+            const dateStr = new Date(data.dato).toLocaleDateString('en-GB', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+            const status = data.status || "New / Novo";
+            const isNew = status.includes("New") || status.includes("Novo");
+            const isCancelled = status.includes("Cancelled") || status.includes("Otkazano");
+            const badgeClass = isCancelled ? "status-cancelled" : (isNew ? "status-ny" : "status-lost");
             tr.innerHTML = `
                 <td>${dateStr}</td><td>${data.navn}</td><td>${data.telefon}</td><td>${data.tjeneste}</td>
-                <td><span class="status-badge ${badgeClass}">${data.status}</span></td>
-                <td>${data.status.includes("New") || data.status.includes("Novo") ? `<button onclick="markAsDone('${id}')" style="background:var(--primary-navy); color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Resolved / Rešeno</button>` : 'Resolved / Rešeno'}</td>
-            `;
+                <td><span class="status-badge ${badgeClass}">${status}</span></td>
+                <td>
+                    ${isNew ? `<button onclick="markAsDone('${id}')" style="background:var(--primary-navy);color:white;border:none;padding:5px 10px;border-radius:3px;cursor:pointer;margin:2px;">Resolved / Rešeno</button>` : ''}
+                    ${!isCancelled ? `<button onclick="cancelBooking('${id}')" style="background:#6c757d;color:white;border:none;padding:5px 10px;border-radius:3px;cursor:pointer;margin:2px;">Cancel / Otkaži</button>` : ''}
+                    <button onclick="deleteBooking('${id}')" style="background:#dc3545;color:white;border:none;padding:5px 10px;border-radius:3px;cursor:pointer;margin:2px;">Delete / Obriši</button>
+                </td>`;
             tbody.appendChild(tr);
+        }
+
+        async function cancelBooking(id) {
+            if (!auth.currentUser) return alert("Login required / Potrebna je prijava");
+            if (!confirm("Cancel this booking? The booking will remain in the overview. / Otkazati rezervaciju?")) return;
+            try {
+                await db.collection("bookings").doc(id).update({
+                    status: "Cancelled / Otkazano",
+                    cancelledAt: new Date().toISOString()
+                });
+            } catch (error) {
+                alert("Cancel error / Greška: " + (error.message || error));
+            }
+        }
+
+        async function deleteBooking(id) {
+            if (!auth.currentUser) return alert("Login required / Potrebna je prijava");
+            if (!confirm("Delete this booking permanently? This cannot be undone. / Trajno obrisati rezervaciju?")) return;
+            try {
+                await db.collection("bookings").doc(id).delete();
+            } catch (error) {
+                alert("Delete error / Greška: " + (error.message || error));
+            }
         }
 
         async function markAsDone(id) {
