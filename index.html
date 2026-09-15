@@ -49,8 +49,13 @@
         }
 
         .navbar-brand img {
-            height: 50px;
-            border-radius: 5px;
+            height: 78px;
+            width: auto;
+            padding: 5px;
+            background: white;
+            border: 3px solid var(--primary-gold);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            border-radius: 12px;
             object-fit: contain;
         }
         
@@ -444,6 +449,16 @@
             .hero-buttons { flex-direction: column; width: 100%; }
             .hero-buttons a { width: 100%; box-sizing: border-box; }
         }
+
+        .contact-public { background:white; border-radius:15px; padding:30px; box-shadow:0 5px 20px rgba(0,0,0,.06); text-align:center; }
+        .contact-public a { color:var(--primary-navy); font-weight:bold; text-decoration:none; margin:8px 14px; display:inline-block; }
+        .employee-grid,.module-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; }
+        .content-card { background:white; padding:24px; border-radius:12px; box-shadow:0 5px 18px rgba(0,0,0,.07); border-top:4px solid var(--primary-gold); }
+        .content-card img { width:100%; height:190px; object-fit:cover; border-radius:8px; margin-bottom:12px; }
+        .admin-form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:15px; }
+        .visibility-row { display:flex; align-items:center; gap:8px; margin:10px 0; }
+        .manage-row { display:flex; justify-content:space-between; gap:12px; align-items:center; padding:12px; background:#f8f8f8; border-radius:7px; margin-bottom:8px; }
+        .btn-danger { background:#dc3545 !important; border-color:#dc3545 !important; }
     </style>
 </head>
 <body>
@@ -510,6 +525,9 @@
             </div>
         </section>
 
+        <section id="contact-section" class="section"><h2 class="section-title">Kontakt</h2><div id="public-contact" class="contact-public"></div></section>
+        <section id="employees-section" class="section"><h2 class="section-title">Naš tim</h2><div id="public-employees" class="employee-grid"></div></section>
+        <section id="modules-section" class="section"><h2 class="section-title">Informacije</h2><div id="public-modules" class="module-grid"></div></section>
         <section id="book" class="booking-section">
             <h2 class="section-title" data-i18n="book_title">Zakažite onlajn sastanak / pomoć</h2>
             <div class="booking-form">
@@ -661,10 +679,16 @@
                     </div>
                 </div>
 
+
+                <div class="admin-card"><h3>4. Contact information / Kontakt</h3><div class="admin-form-grid"><div><label>Phone</label><input id="contactPhone" class="form-control"></div><div><label>Email</label><input id="contactEmail" class="form-control"></div><div><label>Address</label><input id="contactAddress" class="form-control"></div></div><div class="visibility-row"><input type="checkbox" id="contactVisible"><label for="contactVisible">Visible to users / Vidljivo korisnicima</label></div><button class="btn-solid" onclick="saveContact()">Save contact</button></div>
+                <div class="admin-card"><h3>5. Employees / Zaposleni</h3><div class="admin-form-grid"><input id="employeeName" class="form-control" placeholder="Name"><input id="employeeRole" class="form-control" placeholder="Role"><input id="employeePhone" class="form-control" placeholder="Phone"><input id="employeeEmail" class="form-control" placeholder="Email"><input id="employeeImage" class="form-control" placeholder="Image URL (optional)"></div><div class="visibility-row"><input type="checkbox" id="employeeVisible" checked><label for="employeeVisible">Visible to users</label></div><button class="btn-solid" onclick="addEmployee()">Add employee</button><div id="admin-employees" style="margin-top:20px"></div></div>
+                <div class="admin-card"><h3>6. Custom modules / Moduli</h3><div class="admin-form-grid"><input id="moduleTitle" class="form-control" placeholder="Module title"><textarea id="moduleText" class="form-control" placeholder="Module content"></textarea><input id="moduleLink" class="form-control" placeholder="Optional link"></div><div class="visibility-row"><input type="checkbox" id="moduleVisible" checked><label for="moduleVisible">Visible to users</label></div><button class="btn-solid" onclick="addModule()">Create module</button><div id="admin-modules" style="margin-top:20px"></div></div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>emailjs.init({publicKey:"FlF_fc4HV9FDLofhS"});</script>
     <script>
         // ---------------------------------------------------------
         // 1. FIREBASE INITIALIZATION WITH YOUR CREDENTIALS
@@ -981,7 +1005,8 @@
 
             try {
                 await db.collection("bookings").add(bookingData);
-                alert("Thank you! We will contact you shortly. / Hvala na upitu! Kontaktiraćemo vas uskoro.");
+                await emailjs.send("service_m0ve9d9", "template_q8r1xwl", {to_email:"kucna.nega.arfianka@gmail.com", navn:bookingData.navn, telefon:bookingData.telefon, tjeneste:bookingData.tjeneste, besked:bookingData.besked || "Ingen besked", dato:new Date(bookingData.dato).toLocaleString("da-DK")});
+                alert("Booking saved and email sent. / Rezervacija je sačuvana i email je poslat.");
                 event.target.reset();
             } catch (error) {
                 alert("Error / Greška: " + error.message);
@@ -992,23 +1017,7 @@
             btn.innerText = translations[currentLang]["form_btn"];
         }
 
-        async function loginAdmin(event) {
-            event.preventDefault();
-            const email = document.getElementById('adminEmail').value;
-            const pass = document.getElementById('adminPass').value;
-            
-            try {
-                await auth.signInWithEmailAndPassword(email, pass);
-                showAdminDashboard();
-            } catch(error) {
-                // Fallback til demo konto hvis den ikke er oprettet i Firebase Auth endnu
-                if(email === "admin@arfianka.se" && pass === "Aria-26") {
-                    showAdminDashboard();
-                } else {
-                    alert("Login error: " + error.message);
-                }
-            }
-        }
+        async function loginAdmin(event) { event.preventDefault(); try { await auth.signInWithEmailAndPassword(document.getElementById('adminEmail').value.trim(), document.getElementById('adminPass').value); showAdminDashboard(); } catch(error) { alert("Login error: " + error.message); } }
 
         async function logoutAdmin() {
             await auth.signOut();
@@ -1037,10 +1046,12 @@
             tr.innerHTML = `
                 <td>${dateStr}</td><td>${data.navn}</td><td>${data.telefon}</td><td>${data.tjeneste}</td>
                 <td><span class="status-badge ${badgeClass}">${data.status}</span></td>
-                <td>${data.status.includes("New") || data.status.includes("Novo") ? `<button onclick="markAsDone('${id}')" style="background:var(--primary-navy); color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Resolved / Rešeno</button>` : 'Resolved / Rešeno'}</td>
+                <td>${data.status.includes("New") || data.status.includes("Novo") ? `<button onclick="markAsDone('${id}')" style="background:var(--primary-navy); color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Resolved / Rešeno</button>` : 'Resolved / Rešeno'} <button onclick="deleteBooking('${id}')" style="background:#dc3545;color:white;border:0;padding:5px 10px;border-radius:3px;cursor:pointer;margin-left:5px">Delete</button></td>
             `;
             tbody.appendChild(tr);
         }
+
+        async function deleteBooking(id) { if(!auth.currentUser) return alert("Login required"); if(confirm("Delete booking permanently?")) { try { await db.collection("bookings").doc(id).delete(); } catch(error) { alert(error.message); } } }
 
         async function markAsDone(id) {
             try {
@@ -1049,6 +1060,24 @@
                 alert("Error updating status: " + error.message);
             }
         }
+
+        function getData(key, fallback){try{return JSON.parse(localStorage.getItem(key)) ?? fallback}catch(e){return fallback}}
+        function setData(key,value){localStorage.setItem(key,JSON.stringify(value));renderDynamicContent()}
+        function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+        function saveContact(){setData('arfianka_contact',{phone:contactPhone.value,email:contactEmail.value,address:contactAddress.value,visible:contactVisible.checked});alert('Contact saved')}
+        function addEmployee(){const a=getData('arfianka_employees',[]);a.push({id:Date.now(),name:employeeName.value,role:employeeRole.value,phone:employeePhone.value,email:employeeEmail.value,image:employeeImage.value,visible:employeeVisible.checked});setData('arfianka_employees',a);employeeName.value=employeeRole.value=employeePhone.value=employeeEmail.value=employeeImage.value=''}
+        function addModule(){const a=getData('arfianka_modules',[]);a.push({id:Date.now(),title:moduleTitle.value,text:moduleText.value,link:moduleLink.value,visible:moduleVisible.checked});setData('arfianka_modules',a);moduleTitle.value=moduleText.value=moduleLink.value=''}
+        function removeItem(key,id){if(confirm('Delete item?'))setData(key,getData(key,[]).filter(x=>x.id!==id))}
+        function toggleItem(key,id){const a=getData(key,[]);const x=a.find(v=>v.id===id);if(x)x.visible=!x.visible;setData(key,a)}
+        function renderDynamicContent(){
+          const c=getData('arfianka_contact',{phone:'',email:'',address:'',visible:false});contactPhone.value=c.phone||'';contactEmail.value=c.email||'';contactAddress.value=c.address||'';contactVisible.checked=!!c.visible;
+          document.getElementById('contact-section').style.display=c.visible?'block':'none';document.getElementById('public-contact').innerHTML=`${c.phone?`<a href="tel:${esc(c.phone)}">☎ ${esc(c.phone)}</a>`:''}${c.email?`<a href="mailto:${esc(c.email)}">✉ ${esc(c.email)}</a>`:''}${c.address?`<div>${esc(c.address)}</div>`:''}`;
+          const employees=getData('arfianka_employees',[]);document.getElementById('employees-section').style.display=employees.some(x=>x.visible)?'block':'none';document.getElementById('public-employees').innerHTML=employees.filter(x=>x.visible).map(x=>`<article class="content-card">${x.image?`<img src="${esc(x.image)}" alt="">`:''}<h3>${esc(x.name)}</h3><p>${esc(x.role)}</p>${x.phone?`<p><a href="tel:${esc(x.phone)}">${esc(x.phone)}</a></p>`:''}${x.email?`<p><a href="mailto:${esc(x.email)}">${esc(x.email)}</a></p>`:''}</article>`).join('');
+          document.getElementById('admin-employees').innerHTML=employees.map(x=>`<div class="manage-row"><span>${esc(x.name)} (${x.visible?'Visible':'Hidden'})</span><span><button onclick="toggleItem('arfianka_employees',${x.id})">Show/Hide</button> <button class="btn-danger" onclick="removeItem('arfianka_employees',${x.id})">Delete</button></span></div>`).join('');
+          const modules=getData('arfianka_modules',[]);document.getElementById('modules-section').style.display=modules.some(x=>x.visible)?'block':'none';document.getElementById('public-modules').innerHTML=modules.filter(x=>x.visible).map(x=>`<article class="content-card"><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p>${x.link?`<a href="${esc(x.link)}" target="_blank" rel="noopener">Læs mere</a>`:''}</article>`).join('');
+          document.getElementById('admin-modules').innerHTML=modules.map(x=>`<div class="manage-row"><span>${esc(x.title)} (${x.visible?'Visible':'Hidden'})</span><span><button onclick="toggleItem('arfianka_modules',${x.id})">Show/Hide</button> <button class="btn-danger" onclick="removeItem('arfianka_modules',${x.id})">Delete</button></span></div>`).join('');
+        }
+        document.addEventListener('DOMContentLoaded',renderDynamicContent);
     </script>
 </body>
 </html>
