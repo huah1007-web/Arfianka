@@ -1126,11 +1126,46 @@
         function clearBookingFilters(){const q=document.getElementById('bookingSearch'),f=document.getElementById('bookingStatusFilter');if(q)q.value='';if(f)f.value='all';applyBookingFilters();}
         function renderTableRow(id,data,tbody){const group=bookingStatusGroup(data.status),badge=group==='cancelled'?'status-cancelled':(group==='solved'?'status-lost':'status-ny'),admin=getCurrentRole()==='admin',tr=document.createElement('tr');tr.innerHTML=`<td>${bookingSafe(data.date)}</td><td>${bookingSafe(data.navn)}</td><td>${data.telefon!=='-'?`<a href="tel:${bookingSafe(data.telefon)}">${bookingSafe(data.telefon)}</a>`:'-'}</td><td>${data.email!=='-'?`<a href="mailto:${bookingSafe(data.email)}">${bookingSafe(data.email)}</a>`:'-'}</td><td>${bookingSafe(data.tjeneste)}</td><td>${bookingSafe(data.besked)}</td><td><span class="status-badge ${badge}">${bookingSafe(data.status)}</span></td><td><div class="employee-actions">${group!=='solved'?`<button class="employee-edit" onclick="markAsDone('${id}')">Solved</button>`:''}${group!=='cancelled'?`<button class="employee-toggle" onclick="cancelBooking('${id}')">Cancel</button>`:''}${admin?`<button class="employee-delete admin-delete-action" onclick="deleteBooking('${id}')">Delete</button>`:''}</div></td>`;tbody.appendChild(tr);}
 
-        async function markAsDone(id) {
+        async function cancelBooking(id) {
+            if (!auth.currentUser) { alert("You must be logged in. / Morate biti prijavljeni."); return; }
+            if (!confirm("Cancel this booking? It will remain in the history. / Otkazati rezervaciju?")) return;
             try {
-                await db.collection("bookings").doc(id).update({ status: "Resolved / Rešeno" });
+                await db.collection("bookings").doc(id).update({status:"Cancelled / Otkazano",cancelledAt:new Date().toISOString(),cancelledBy:auth.currentUser.email||auth.currentUser.uid});
             } catch (error) {
-                alert("Error updating status: " + error.message);
+                console.error("Cancel booking failed", error);
+                alert("Cancel failed / Otkazivanje nije uspelo: " + (error.message || error));
+            }
+        }
+
+        async function deleteBooking(id) {
+            if (!auth.currentUser) { alert("You must be logged in. / Morate biti prijavljeni."); return; }
+            if (getCurrentRole() !== "admin") { alert("Only the administrator can delete bookings. / Samo administrator može obrisati rezervaciju."); return; }
+            const booking = allBookings.find(item => item.id === id);
+            const label = booking ? `${booking.navn} - ${booking.tjeneste}` : id;
+            if (!confirm(`Delete this booking permanently?
+${label}
+
+This cannot be undone. / Ovo se ne može poništiti.`)) return;
+            try {
+                await db.collection("bookings").doc(id).delete();
+                allBookings = allBookings.filter(item => item.id !== id);
+                updateBookingKpis();
+                applyBookingFilters();
+                alert("Booking deleted. / Rezervacija je obrisana.");
+            } catch (error) {
+                console.error("Delete booking failed", error);
+                const detail = error && (error.code || error.message) ? `${error.code || ""} ${error.message || ""}`.trim() : String(error);
+                alert("Delete failed / Brisanje nije uspelo: " + detail + "\n\nIf the message says permission-denied, Firestore rules must allow delete for signed-in administrators.");
+            }
+        }
+
+        async function markAsDone(id) {
+            if (!auth.currentUser) { alert("You must be logged in. / Morate biti prijavljeni."); return; }
+            try {
+                await db.collection("bookings").doc(id).update({status:"Resolved / Rešeno",resolvedAt:new Date().toISOString(),resolvedBy:auth.currentUser.email||auth.currentUser.uid});
+            } catch (error) {
+                console.error("Resolve booking failed",error);
+                alert("Error updating status: "+((error&&(error.code||error.message))||String(error)));
             }
         }
 
