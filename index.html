@@ -444,23 +444,13 @@
             .hero-buttons { flex-direction: column; width: 100%; }
             .hero-buttons a { width: 100%; box-sizing: border-box; }
         }
-    
-        .cms-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:15px; }
-        .cms-public-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:22px; }
-        .cms-card { background:#fff; padding:24px; border-radius:12px; box-shadow:0 5px 18px rgba(0,0,0,.08); border-top:4px solid var(--primary-gold); }
-        .cms-card img { width:100%; height:190px; object-fit:cover; border-radius:8px; }
-        .cms-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px; margin-top:8px; background:#f7f7f7; border-radius:7px; }
-        .cms-actions { display:flex; gap:6px; flex-wrap:wrap; }
-        .btn-small { padding:7px 10px !important; border-radius:5px !important; font-size:12px !important; }
-        .btn-danger { background:#dc3545 !important; border-color:#dc3545 !important; }
-        .image-library { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; }
-        .image-library-item { border:1px solid #ddd; border-radius:10px; padding:10px; background:#fafafa; }
-        .image-library-item img { width:100%; height:125px; object-fit:cover; border-radius:7px; }
-        .range-row { display:grid; grid-template-columns:180px 1fr 60px; gap:10px; align-items:center; margin:12px 0; }
-        .public-contact { background:#fff; padding:28px; border-radius:14px; text-align:center; box-shadow:0 5px 20px rgba(0,0,0,.07); }
-        .public-contact a { display:inline-block; margin:8px 14px; color:var(--primary-navy); font-weight:bold; text-decoration:none; }
-        #site-logo { transition:height .2s,max-width .2s; }
-        @media(max-width:768px){.range-row{grid-template-columns:1fr}.cms-row{align-items:flex-start;flex-direction:column}}
+
+        .service-link-card{position:relative;display:flex;flex-direction:column;cursor:pointer;transition:transform .2s,box-shadow .2s}.service-link-card:hover{transform:translateY(-4px);box-shadow:0 10px 28px rgba(0,0,0,.12)}
+        .service-link-card .service-price{color:var(--primary-gold);font-weight:bold;margin-top:auto}.service-link-card .book-service-btn{margin-top:16px;width:100%}
+        .cms-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.cms-row{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#f7f7f7;padding:12px;border-radius:7px;margin-top:8px}.cms-actions{display:flex;gap:6px;flex-wrap:wrap}.btn-small{padding:7px 10px!important;border-radius:5px!important;font-size:12px!important}.btn-danger{background:#dc3545!important;border-color:#dc3545!important}
+        .content-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px}.content-card{background:#fff;padding:24px;border-radius:12px;box-shadow:0 5px 18px rgba(0,0,0,.08);border-top:4px solid var(--primary-gold)}.content-card img{width:100%;height:190px;object-fit:cover;border-radius:8px}.public-contact{text-align:center;background:#fff;padding:28px;border-radius:14px;box-shadow:0 5px 20px rgba(0,0,0,.07)}.public-contact a{display:inline-block;margin:8px 14px;color:var(--primary-navy);font-weight:bold;text-decoration:none}
+        .image-library{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:14px}.image-item{border:1px solid #ddd;border-radius:10px;padding:10px;background:#fafafa}.image-item img{width:100%;height:120px;object-fit:cover;border-radius:7px}.range-row{display:grid;grid-template-columns:180px 1fr 60px;gap:10px;align-items:center;margin:12px 0}
+        @media(max-width:768px){.cms-row{align-items:flex-start;flex-direction:column}.range-row{grid-template-columns:1fr}}
     </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
@@ -499,7 +489,7 @@
 
         <section id="tjenester" class="section">
             <h2 class="section-title" data-i18n="srv_title">Pomažemo u svemu</h2>
-            <div class="services-grid">
+            <div class="services-grid" id="dynamicServices">
                 <div class="service-card">
                     <h3 data-i18n="srv_1_title">Onlajn sastanak za sigurnost</h3>
                     <p data-i18n="srv_1_desc">Razgovor preko računara/tableta o zdravlju, blagostanju ili praktičnim izazovima.</p>
@@ -528,9 +518,9 @@
             </div>
         </section>
 
-        <section id="dynamic-contact" class="section"><h2 class="section-title">Kontakt</h2><div id="publicContact" class="public-contact"></div></section>
-        <section id="dynamic-employees" class="section"><h2 class="section-title">Nas tim</h2><div id="publicEmployees" class="cms-public-grid"></div></section>
-        <section id="dynamic-modules" class="section"><h2 class="section-title">Informacije</h2><div id="publicModules" class="cms-public-grid"></div></section>
+        <section id="public-contact-section" class="section"><h2 class="section-title">Kontakt</h2><div id="publicContact" class="public-contact"></div></section>
+        <section id="public-employees-section" class="section"><h2 class="section-title">Nas tim</h2><div id="publicEmployees" class="content-grid"></div></section>
+        <section id="public-modules-section" class="section"><h2 class="section-title">Informacije</h2><div id="publicModules" class="content-grid"></div></section>
         <section id="book" class="booking-section">
             <h2 class="section-title" data-i18n="book_title">Zakažite onlajn sastanak / pomoć</h2>
             <div class="booking-form">
@@ -595,6 +585,7 @@
             <div class="admin-nav-tabs">
                 <button id="tab-btn-bookings" class="active" onclick="switchAdminTab('bookings')">Bookings / Rezervacije</button>
                 <button id="tab-btn-settings" onclick="switchAdminTab('settings')">Edit Website / Uredi sajt</button>
+                <button id="tab-btn-services" onclick="switchAdminTab('services')">Services / Usluge</button>
                 <button id="tab-btn-content" onclick="switchAdminTab('content')">Content / Sadrzaj</button>
                 <button id="tab-btn-images" onclick="switchAdminTab('images')">Images / Slike</button>
             </div>
@@ -685,17 +676,15 @@
                 </div>
 
             </div>
-            <div id="admin-view-content" style="display:none;">
-              <div class="admin-card"><h3>Contact information</h3><div class="cms-grid"><input id="cmsContactPhone" class="form-control" placeholder="Phone"><input id="cmsContactEmail" class="form-control" placeholder="Email"><input id="cmsContactAddress" class="form-control" placeholder="Address"></div><label><input id="cmsContactVisible" type="checkbox"> Visible for users</label><br><br><button class="btn-solid" onclick="saveContactInfo()">Save contact</button></div>
-              <div class="admin-card"><h3>Employees / Zaposleni</h3><div class="cms-grid"><input id="cmsEmployeeName" class="form-control" placeholder="Name"><input id="cmsEmployeeRole" class="form-control" placeholder="Role"><input id="cmsEmployeePhone" class="form-control" placeholder="Phone"><input id="cmsEmployeeEmail" class="form-control" placeholder="Email"><select id="cmsEmployeeImage" class="form-control"></select></div><label><input id="cmsEmployeeVisible" type="checkbox" checked> Visible for users</label><br><br><button class="btn-solid" onclick="addCmsEmployee()">Add employee</button><div id="cmsEmployeeList"></div></div>
-              <div class="admin-card"><h3>Custom modules / Moduli</h3><div class="cms-grid"><input id="cmsModuleTitle" class="form-control" placeholder="Title"><textarea id="cmsModuleText" class="form-control" placeholder="Content"></textarea><input id="cmsModuleLink" class="form-control" placeholder="Optional link"><select id="cmsModuleImage" class="form-control"></select></div><label><input id="cmsModuleVisible" type="checkbox" checked> Visible for users</label><br><br><button class="btn-solid" onclick="addCmsModule()">Create module</button><div id="cmsModuleList"></div></div>
-              <div class="admin-card"><h3>Booking dropdown / Usluge za rezervaciju</h3><p>Add, edit, delete, reorder, and show or hide booking choices.</p><div class="cms-grid"><input id="cmsBookingOption" class="form-control" placeholder="New booking option"><input id="cmsBookingPrice" class="form-control" placeholder="Optional price"></div><button class="btn-solid" onclick="addBookingOption()">Add booking option</button><div id="cmsBookingList"></div></div>
+            <div id="admin-view-services" style="display:none">
+              <div class="admin-card"><h3>Services linked to booking / Usluge povezane sa rezervacijom</h3><p>Every visible service is shown as an information card and automatically appears in the booking dropdown. Users can click Book and the correct service is selected.</p><div class="cms-grid"><input id="svcTitle" class="form-control" placeholder="Service title"><textarea id="svcDescription" class="form-control" placeholder="Description"></textarea><input id="svcPrice" class="form-control" placeholder="Optional price"><input id="svcImage" class="form-control" placeholder="Optional image URL"></div><label><input id="svcVisible" type="checkbox" checked> Visible and bookable</label><br><br><button class="btn-solid" onclick="saveServiceEditor()" id="svcSaveBtn">Add service</button><button class="btn-solid" onclick="resetServiceEditor()" style="background:#777;border-color:#777">Clear</button><input type="hidden" id="svcEditId"><div id="serviceManager"></div></div>
             </div>
-            <div id="admin-view-images" style="display:none;">
-              <div class="admin-card"><h3>Image library / Biblioteka slika</h3><input id="cmsImageUpload" type="file" accept="image/*" multiple class="form-control"><button class="btn-solid" onclick="uploadCmsImages()" style="margin-top:10px">Upload images</button><div id="cmsImageLibrary" class="image-library" style="margin-top:18px"></div></div>
-              <div class="admin-card"><h3>Logo controls</h3><div class="range-row"><label>Logo height</label><input id="cmsLogoSize" type="range" min="40" max="160" oninput="previewImageLayout()"><output id="cmsLogoSizeOut"></output></div><div class="range-row"><label>Maximum width</label><input id="cmsLogoWidth" type="range" min="100" max="360" oninput="previewImageLayout()"><output id="cmsLogoWidthOut"></output></div><label><input id="cmsLogoFrame" type="checkbox" onchange="previewImageLayout()"> Gold frame and shadow</label><br><br><button class="btn-solid" onclick="saveImageLayout()">Save logo settings</button></div>
-              <div class="admin-card"><h3>Profile image placement</h3><div class="range-row"><label>Image height</label><input id="cmsProfileHeight" type="range" min="280" max="760" step="10" oninput="previewImageLayout()"><output id="cmsProfileHeightOut"></output></div><div class="range-row"><label>Horizontal position</label><input id="cmsProfileX" type="range" min="0" max="100" oninput="previewImageLayout()"><output id="cmsProfileXOut"></output></div><div class="range-row"><label>Vertical position</label><input id="cmsProfileY" type="range" min="0" max="100" oninput="previewImageLayout()"><output id="cmsProfileYOut"></output></div><select id="cmsProfileFit" class="form-control" onchange="previewImageLayout()"><option value="cover">Fill area</option><option value="contain">Show whole image</option></select><button class="btn-solid" onclick="saveImageLayout()" style="margin-top:10px">Save profile placement</button></div>
+            <div id="admin-view-content" style="display:none">
+              <div class="admin-card"><h3>Contact information</h3><div class="cms-grid"><input id="contactPhoneAdmin" class="form-control" placeholder="Phone"><input id="contactEmailAdmin" class="form-control" placeholder="Email"><input id="contactAddressAdmin" class="form-control" placeholder="Address"></div><label><input id="contactVisibleAdmin" type="checkbox"> Visible</label><br><br><button class="btn-solid" onclick="saveContactAdmin()">Save contact</button></div>
+              <div class="admin-card"><h3>Employees</h3><div class="cms-grid"><input id="empName" class="form-control" placeholder="Name"><input id="empRole" class="form-control" placeholder="Role"><input id="empPhone" class="form-control" placeholder="Phone"><input id="empEmail" class="form-control" placeholder="Email"><input id="empImage" class="form-control" placeholder="Image URL"></div><label><input id="empVisible" type="checkbox" checked> Visible</label><br><br><button class="btn-solid" onclick="addEmployeeAdmin()">Add employee</button><div id="employeeManager"></div></div>
+              <div class="admin-card"><h3>Custom modules</h3><div class="cms-grid"><input id="moduleTitle" class="form-control" placeholder="Title"><textarea id="moduleText" class="form-control" placeholder="Content"></textarea><input id="moduleLink" class="form-control" placeholder="Optional link"><input id="moduleImage" class="form-control" placeholder="Image URL"></div><label><input id="moduleVisible" type="checkbox" checked> Visible</label><br><br><button class="btn-solid" onclick="addModuleAdmin()">Create module</button><div id="moduleManager"></div></div>
             </div>
+            <div id="admin-view-images" style="display:none"><div class="admin-card"><h3>Image library and layout</h3><input id="imageUploadAdmin" type="file" accept="image/*" multiple class="form-control"><button class="btn-solid" onclick="uploadAdminImages()" style="margin-top:10px">Upload</button><div id="imageLibraryAdmin" class="image-library" style="margin-top:18px"></div></div><div class="admin-card"><h3>Logo and profile controls</h3><div class="range-row"><label>Logo size</label><input id="logoSizeAdmin" type="range" min="40" max="160" oninput="previewLayoutAdmin()"><output id="logoSizeOut"></output></div><div class="range-row"><label>Profile height</label><input id="profileHeightAdmin" type="range" min="280" max="760" step="10" oninput="previewLayoutAdmin()"><output id="profileHeightOut"></output></div><div class="range-row"><label>Profile horizontal</label><input id="profileXAdmin" type="range" min="0" max="100" oninput="previewLayoutAdmin()"><output id="profileXOut"></output></div><div class="range-row"><label>Profile vertical</label><input id="profileYAdmin" type="range" min="0" max="100" oninput="previewLayoutAdmin()"><output id="profileYOut"></output></div><button class="btn-solid" onclick="saveLayoutAdmin()">Save layout</button></div></div>
         </div>
     </div>
 
@@ -716,8 +705,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
-        emailjs.init({ publicKey: "FlF_fc4HV9FDLofhS" });
-        const EMAIL_SERVICE_ID="service_m0ve9d9", EMAIL_TEMPLATE_ID="template_q8r1xwl", EMAIL_RECIPIENT="kucna.nega.arfianka@gmail.com";
+        emailjs.init({publicKey:"FlF_fc4HV9FDLofhS"});
+        const EMAIL_SERVICE_ID="service_m0ve9d9",EMAIL_TEMPLATE_ID="template_q8r1xwl",EMAIL_RECIPIENT="kucna.nega.arfianka@gmail.com";
 
         // ---------------------------------------------------------
         // 2. LANGUAGE SYSTEM
@@ -987,14 +976,7 @@
             fetchBookings(); 
         }
         
-        function switchAdminTab(tab) {
-            ['bookings','settings','content','images'].forEach(name => {
-                const btn=document.getElementById('tab-btn-'+name), view=document.getElementById('admin-view-'+name);
-                if(btn) btn.classList.toggle('active',name===tab);
-                if(view) view.style.display=name===tab?'block':'none';
-            });
-            if(tab==='content'||tab==='images') renderCms();
-        }
+        function switchAdminTab(tab){['bookings','settings','services','content','images'].forEach(n=>{const b=document.getElementById('tab-btn-'+n),v=document.getElementById('admin-view-'+n);if(b)b.classList.toggle('active',n===tab);if(v)v.style.display=n===tab?'block':'none'});renderEverything();}
 
         // ---------------------------------------------------------
         // 5. FIREBASE INTEGRATED ACTIONS (Bookings & Auth)
@@ -1016,7 +998,7 @@
 
             try {
                 await db.collection("bookings").add(bookingData);
-                await emailjs.send(EMAIL_SERVICE_ID, EMAIL_TEMPLATE_ID, {to_email:EMAIL_RECIPIENT, navn:bookingData.navn, telefon:bookingData.telefon, tjeneste:bookingData.tjeneste, besked:bookingData.besked || "Ingen besked", dato:new Date(bookingData.dato).toLocaleString("da-DK")});
+                await emailjs.send(EMAIL_SERVICE_ID,EMAIL_TEMPLATE_ID,{to_email:EMAIL_RECIPIENT,navn:bookingData.navn,telefon:bookingData.telefon,tjeneste:bookingData.tjeneste,besked:bookingData.besked||"Ingen besked",dato:new Date(bookingData.dato).toLocaleString("da-DK")});
                 alert("Booking saved and email sent. / Rezervacija je sacuvana i email je poslat.");
                 event.target.reset();
             } catch (error) {
@@ -1028,7 +1010,7 @@
             btn.innerText = translations[currentLang]["form_btn"];
         }
 
-        async function loginAdmin(event) { event.preventDefault(); try { await auth.signInWithEmailAndPassword(document.getElementById('adminEmail').value.trim(), document.getElementById('adminPass').value); showAdminDashboard(); } catch(error) { alert("Login error: " + error.message); } }
+        async function loginAdmin(event){event.preventDefault();try{await auth.signInWithEmailAndPassword(document.getElementById('adminEmail').value.trim(),document.getElementById('adminPass').value);showAdminDashboard()}catch(error){alert("Login error: "+error.message)}}
 
         async function logoutAdmin() {
             await auth.signOut();
@@ -1057,12 +1039,10 @@
             tr.innerHTML = `
                 <td>${dateStr}</td><td>${data.navn}</td><td>${data.telefon}</td><td>${data.tjeneste}</td>
                 <td><span class="status-badge ${badgeClass}">${data.status}</span></td>
-                <td>${data.status.includes("New") || data.status.includes("Novo") ? `<button onclick="markAsDone('${id}')" style="background:var(--primary-navy); color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Resolved / Rešeno</button>` : 'Resolved / Rešeno'} <button onclick="deleteBooking('${id}')" style="background:#dc3545;color:white;border:0;padding:5px 10px;border-radius:3px;cursor:pointer;margin-left:5px">Delete</button></td>
+                <td>${data.status.includes("New") || data.status.includes("Novo") ? `<button onclick="markAsDone('${id}')" style="background:var(--primary-navy); color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Resolved / Rešeno</button>` : 'Resolved / Rešeno'}</td>
             `;
             tbody.appendChild(tr);
         }
-
-        async function deleteBooking(id) { if(!auth.currentUser) return alert("Login required"); if(confirm("Delete booking permanently?")) { try { await db.collection("bookings").doc(id).delete(); } catch(error) { alert(error.message); } } }
 
         async function markAsDone(id) {
             try {
@@ -1072,37 +1052,34 @@
             }
         }
 
-        const cmsGet=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}};
-        const cmsSet=(k,v)=>{localStorage.setItem(k,JSON.stringify(v));renderCms()};
-        const cmsEsc=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-        let cmsImages=cmsGet('arfianka_images',[{id:'logo-default',name:'Current logo',src:'a3b1c038-c74c-49f8-801e-e018737ac673.jpg'},{id:'profile-default',name:'Current profile',src:'Kri.jpg'}]);
-        let cmsLayout=cmsGet('arfianka_image_layout',{logo:'logo-default',profile:'profile-default',hero:'',logoSize:78,logoWidth:240,logoFrame:true,profileHeight:470,profileX:50,profileY:20,profileFit:'cover'});
-        function imageSrc(id){return cmsImages.find(x=>x.id===id)?.src||''}
-        function saveContactInfo(){cmsSet('arfianka_contact',{phone:cmsContactPhone.value,email:cmsContactEmail.value,address:cmsContactAddress.value,visible:cmsContactVisible.checked})}
-        function addCmsEmployee(){const a=cmsGet('arfianka_employees',[]);a.push({id:Date.now(),name:cmsEmployeeName.value,role:cmsEmployeeRole.value,phone:cmsEmployeePhone.value,email:cmsEmployeeEmail.value,image:cmsEmployeeImage.value,visible:cmsEmployeeVisible.checked});cmsSet('arfianka_employees',a)}
-        function addCmsModule(){const a=cmsGet('arfianka_modules',[]);a.push({id:Date.now(),title:cmsModuleTitle.value,text:cmsModuleText.value,link:cmsModuleLink.value,image:cmsModuleImage.value,visible:cmsModuleVisible.checked});cmsSet('arfianka_modules',a)}
-        function cmsToggle(k,id){const a=cmsGet(k,[]),x=a.find(v=>v.id===id);if(x)x.visible=!x.visible;cmsSet(k,a)}
-        function cmsDelete(k,id){if(confirm('Delete permanently?'))cmsSet(k,cmsGet(k,[]).filter(x=>x.id!==id))}
-        function addBookingOption(){const name=cmsBookingOption.value.trim(),price=cmsBookingPrice.value.trim();if(!name)return;const a=cmsGet('arfianka_booking_options',currentServices.map((x,i)=>({id:Date.now()+i,name:x,price:'',visible:true})));a.push({id:Date.now(),name,price,visible:true});cmsSet('arfianka_booking_options',a);cmsBookingOption.value='';cmsBookingPrice.value=''}
-        function editBookingOption(id){const a=cmsGet('arfianka_booking_options',[]),x=a.find(v=>v.id===id);if(!x)return;const n=prompt('Booking option',x.name);if(n===null)return;const pr=prompt('Price (optional)',x.price||'');x.name=n.trim();x.price=(pr||'').trim();cmsSet('arfianka_booking_options',a)}
-        function moveBookingOption(id,dir){const a=cmsGet('arfianka_booking_options',[]),i=a.findIndex(x=>x.id===id),j=i+dir;if(i<0||j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];cmsSet('arfianka_booking_options',a)}
-        function uploadCmsImages(){const files=[...cmsImageUpload.files];Promise.all(files.map(f=>new Promise((resolve,reject)=>{if(f.size>1500000)return reject(new Error(f.name+' is larger than 1.5 MB'));const r=new FileReader;r.onload=()=>resolve({id:Date.now()+'-'+Math.random(),name:f.name,src:r.result});r.onerror=reject;r.readAsDataURL(f)}))).then(a=>{cmsImages.push(...a);cmsSet('arfianka_images',cmsImages);cmsImageUpload.value=''}).catch(e=>alert(e.message))}
-        function assignCmsImage(id,type){cmsLayout[type]=id;cmsSet('arfianka_image_layout',cmsLayout)}
-        function removeCmsImage(id){if([cmsLayout.logo,cmsLayout.profile,cmsLayout.hero].includes(id))return alert('Assign another image before deleting this one.');cmsImages=cmsImages.filter(x=>x.id!==id);cmsSet('arfianka_images',cmsImages)}
-        function previewImageLayout(){cmsLayout.logoSize=+cmsLogoSize.value;cmsLayout.logoWidth=+cmsLogoWidth.value;cmsLayout.logoFrame=cmsLogoFrame.checked;cmsLayout.profileHeight=+cmsProfileHeight.value;cmsLayout.profileX=+cmsProfileX.value;cmsLayout.profileY=+cmsProfileY.value;cmsLayout.profileFit=cmsProfileFit.value;applyImageLayout()}
-        function saveImageLayout(){cmsSet('arfianka_image_layout',cmsLayout);alert('Image layout saved')}
-        function applyImageLayout(){const logo=document.getElementById('site-logo'),profile=document.getElementById('site-profile-pic'),hero=document.getElementById('forside');if(logo){logo.src=imageSrc(cmsLayout.logo)||logo.src;logo.style.height=cmsLayout.logoSize+'px';logo.style.maxWidth=cmsLayout.logoWidth+'px';logo.style.padding=cmsLayout.logoFrame?'4px':'0';logo.style.background=cmsLayout.logoFrame?'white':'transparent';logo.style.border=cmsLayout.logoFrame?'3px solid var(--primary-gold)':'0';logo.style.boxShadow=cmsLayout.logoFrame?'0 5px 18px rgba(0,0,0,.35)':'none'}if(profile){profile.style.backgroundImage=`url("${imageSrc(cmsLayout.profile)||'Kri.jpg'}")`;profile.style.minHeight=cmsLayout.profileHeight+'px';profile.style.backgroundPosition=`${cmsLayout.profileX}% ${cmsLayout.profileY}%`;profile.style.backgroundSize=cmsLayout.profileFit}if(hero&&imageSrc(cmsLayout.hero))hero.style.background=`linear-gradient(rgba(13,44,84,.78),rgba(13,44,84,.78)),url("${imageSrc(cmsLayout.hero)}") center/cover`}
-        function renderCms(){
-          cmsImages=cmsGet('arfianka_images',cmsImages);cmsLayout=cmsGet('arfianka_image_layout',cmsLayout);applyImageLayout();
-          const c=cmsGet('arfianka_contact',{phone:'',email:'',address:'',visible:false});if(document.getElementById('cmsContactPhone')){cmsContactPhone.value=c.phone;cmsContactEmail.value=c.email;cmsContactAddress.value=c.address;cmsContactVisible.checked=c.visible}dynamicContact.style.display=c.visible?'block':'none';publicContact.innerHTML=`${c.phone?`<a href="tel:${cmsEsc(c.phone)}">☎ ${cmsEsc(c.phone)}</a>`:''}${c.email?`<a href="mailto:${cmsEsc(c.email)}">✉ ${cmsEsc(c.email)}</a>`:''}<div>${cmsEsc(c.address)}</div>`;
-          const es=cmsGet('arfianka_employees',[]);dynamicEmployees.style.display=es.some(x=>x.visible)?'block':'none';publicEmployees.innerHTML=es.filter(x=>x.visible).map(x=>`<article class="cms-card">${x.image?`<img src="${cmsEsc(x.image)}">`:''}<h3>${cmsEsc(x.name)}</h3><p>${cmsEsc(x.role)}</p><p>${cmsEsc(x.phone)}<br>${cmsEsc(x.email)}</p></article>`).join('');if(document.getElementById('cmsEmployeeList'))cmsEmployeeList.innerHTML=es.map(x=>`<div class="cms-row"><span>${cmsEsc(x.name)} (${x.visible?'Visible':'Hidden'})</span><span class="cms-actions"><button class="btn-small" onclick="cmsToggle('arfianka_employees',${x.id})">Show/Hide</button><button class="btn-small btn-danger" onclick="cmsDelete('arfianka_employees',${x.id})">Delete</button></span></div>`).join('');
-          const ms=cmsGet('arfianka_modules',[]);dynamicModules.style.display=ms.some(x=>x.visible)?'block':'none';publicModules.innerHTML=ms.filter(x=>x.visible).map(x=>`<article class="cms-card">${x.image?`<img src="${cmsEsc(x.image)}">`:''}<h3>${cmsEsc(x.title)}</h3><p>${cmsEsc(x.text)}</p>${x.link?`<a href="${cmsEsc(x.link)}" target="_blank" rel="noopener">Read more</a>`:''}</article>`).join('');if(document.getElementById('cmsModuleList'))cmsModuleList.innerHTML=ms.map(x=>`<div class="cms-row"><span>${cmsEsc(x.title)} (${x.visible?'Visible':'Hidden'})</span><span class="cms-actions"><button class="btn-small" onclick="cmsToggle('arfianka_modules',${x.id})">Show/Hide</button><button class="btn-small btn-danger" onclick="cmsDelete('arfianka_modules',${x.id})">Delete</button></span></div>`).join('');
-          let opts=cmsGet('arfianka_booking_options',[]);if(!opts.length){opts=currentServices.map((x,i)=>({id:Date.now()+i,name:x,price:'',visible:true}));localStorage.setItem('arfianka_booking_options',JSON.stringify(opts))}currentServices=opts.filter(x=>x.visible).map(x=>x.name+(x.price?' - '+x.price:''));renderClientDropdown();if(document.getElementById('cmsBookingList'))cmsBookingList.innerHTML=opts.map(x=>`<div class="cms-row"><span>${cmsEsc(x.name)} ${x.price?'('+cmsEsc(x.price)+')':''} (${x.visible?'Visible':'Hidden'})</span><span class="cms-actions"><button class="btn-small" onclick="moveBookingOption(${x.id},-1)">↑</button><button class="btn-small" onclick="moveBookingOption(${x.id},1)">↓</button><button class="btn-small" onclick="editBookingOption(${x.id})">Edit</button><button class="btn-small" onclick="cmsToggle('arfianka_booking_options',${x.id})">Show/Hide</button><button class="btn-small btn-danger" onclick="cmsDelete('arfianka_booking_options',${x.id})">Delete</button></span></div>`).join('');
-          const optionHtml='<option value="">No image</option>'+cmsImages.map(x=>`<option value="${cmsEsc(x.src)}">${cmsEsc(x.name)}</option>`).join('');if(document.getElementById('cmsEmployeeImage'))cmsEmployeeImage.innerHTML=optionHtml;if(document.getElementById('cmsModuleImage'))cmsModuleImage.innerHTML=optionHtml;
-          if(document.getElementById('cmsImageLibrary'))cmsImageLibrary.innerHTML=cmsImages.map(x=>`<div class="image-library-item"><img src="${cmsEsc(x.src)}"><strong>${cmsEsc(x.name)}</strong><div class="cms-actions"><button class="btn-small" onclick="assignCmsImage('${x.id}','logo')">Logo</button><button class="btn-small" onclick="assignCmsImage('${x.id}','profile')">Profile</button><button class="btn-small" onclick="assignCmsImage('${x.id}','hero')">Hero</button>${String(x.id).startsWith('logo-default')||String(x.id).startsWith('profile-default')?'':`<button class="btn-small btn-danger" onclick="removeCmsImage('${x.id}')">Delete</button>`}</div></div>`).join('');
-          if(document.getElementById('cmsLogoSize')){cmsLogoSize.value=cmsLayout.logoSize;cmsLogoWidth.value=cmsLayout.logoWidth;cmsLogoFrame.checked=cmsLayout.logoFrame;cmsProfileHeight.value=cmsLayout.profileHeight;cmsProfileX.value=cmsLayout.profileX;cmsProfileY.value=cmsLayout.profileY;cmsProfileFit.value=cmsLayout.profileFit;cmsLogoSizeOut.value=cmsLayout.logoSize+'px';cmsLogoWidthOut.value=cmsLayout.logoWidth+'px';cmsProfileHeightOut.value=cmsLayout.profileHeight+'px';cmsProfileXOut.value=cmsLayout.profileX+'%';cmsProfileYOut.value=cmsLayout.profileY+'%'}
+        const cget=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}},cset=(k,v)=>{localStorage.setItem(k,JSON.stringify(v));renderEverything()},ce=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const defaultLinkedServices=[{id:1,title:'Onlajn sastanak za sigurnost',description:'Razgovor preko racunara/tableta o zdravlju, blagostanju ili prakticnim izazovima.',price:'',image:'',visible:true},{id:2,title:'Prakticna i licna nega',description:'Pomoc pri kupovini, kuvanju i licnoj higijeni sa postovanjem i dostojanstvom.',price:'',image:'',visible:true},{id:3,title:'Zdravstveno savetovanje',description:'Ovlascena procena, upravljanje lekovima i dijalog sa opstinom/lekarom.',price:'',image:'',visible:true}];
+        function linkedServices(){return cget('arfianka_linked_services',defaultLinkedServices)}
+        function saveServiceEditor(){const a=linkedServices(),id=Number(svcEditId.value),obj={id:id||Date.now(),title:svcTitle.value.trim(),description:svcDescription.value.trim(),price:svcPrice.value.trim(),image:svcImage.value.trim(),visible:svcVisible.checked};if(!obj.title)return alert('Enter service title');const i=a.findIndex(x=>x.id===id);if(i>=0)a[i]=obj;else a.push(obj);cset('arfianka_linked_services',a);resetServiceEditor()}
+        function editLinkedService(id){const x=linkedServices().find(v=>v.id===id);if(!x)return;svcEditId.value=x.id;svcTitle.value=x.title;svcDescription.value=x.description;svcPrice.value=x.price||'';svcImage.value=x.image||'';svcVisible.checked=x.visible;svcSaveBtn.textContent='Save changes'}
+        function resetServiceEditor(){svcEditId.value='';svcTitle.value=svcDescription.value=svcPrice.value=svcImage.value='';svcVisible.checked=true;svcSaveBtn.textContent='Add service'}
+        function toggleLinkedService(id){const a=linkedServices(),x=a.find(v=>v.id===id);if(x)x.visible=!x.visible;cset('arfianka_linked_services',a)}
+        function deleteLinkedService(id){if(confirm('Delete service?'))cset('arfianka_linked_services',linkedServices().filter(x=>x.id!==id))}
+        function moveLinkedService(id,d){const a=linkedServices(),i=a.findIndex(x=>x.id===id),j=i+d;if(i<0||j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];cset('arfianka_linked_services',a)}
+        function bookLinkedService(title){document.getElementById('service').value=title;document.getElementById('book').scrollIntoView({behavior:'smooth'});setTimeout(()=>document.getElementById('name').focus(),500)}
+        function saveContactAdmin(){cset('arfianka_contact',{phone:contactPhoneAdmin.value,email:contactEmailAdmin.value,address:contactAddressAdmin.value,visible:contactVisibleAdmin.checked})}
+        function addEmployeeAdmin(){const a=cget('arfianka_employees',[]);a.push({id:Date.now(),name:empName.value,role:empRole.value,phone:empPhone.value,email:empEmail.value,image:empImage.value,visible:empVisible.checked});cset('arfianka_employees',a)}
+        function addModuleAdmin(){const a=cget('arfianka_modules',[]);a.push({id:Date.now(),title:moduleTitle.value,text:moduleText.value,link:moduleLink.value,image:moduleImage.value,visible:moduleVisible.checked});cset('arfianka_modules',a)}
+        function toggleContent(k,id){const a=cget(k,[]),x=a.find(v=>v.id===id);if(x)x.visible=!x.visible;cset(k,a)}function deleteContent(k,id){if(confirm('Delete?'))cset(k,cget(k,[]).filter(x=>x.id!==id))}
+        let adminImages=cget('arfianka_images',[{id:'logo',name:'Logo',src:'a3b1c038-c74c-49f8-801e-e018737ac673.jpg'},{id:'profile',name:'Profile',src:'Kri.jpg'}]),adminLayout=cget('arfianka_layout',{logo:'logo',profile:'profile',logoSize:78,profileHeight:450,profileX:50,profileY:20});function adminImage(id){return adminImages.find(x=>x.id===id)?.src||''}
+        function uploadAdminImages(){Promise.all([...imageUploadAdmin.files].map(f=>new Promise((r,j)=>{if(f.size>1500000)return j(Error('Max 1.5 MB'));const x=new FileReader;x.onload=()=>r({id:Date.now()+'-'+Math.random(),name:f.name,src:x.result});x.onerror=j;x.readAsDataURL(f)}))).then(a=>{adminImages.push(...a);cset('arfianka_images',adminImages)}).catch(e=>alert(e.message))}
+        function assignAdminImage(id,type){adminLayout[type]=id;cset('arfianka_layout',adminLayout)}function previewLayoutAdmin(){adminLayout.logoSize=+logoSizeAdmin.value;adminLayout.profileHeight=+profileHeightAdmin.value;adminLayout.profileX=+profileXAdmin.value;adminLayout.profileY=+profileYAdmin.value;applyAdminLayout()}function saveLayoutAdmin(){cset('arfianka_layout',adminLayout)}
+        function applyAdminLayout(){const l=document.getElementById('site-logo'),p=document.getElementById('site-profile-pic');if(l){l.src=adminImage(adminLayout.logo)||l.src;l.style.height=adminLayout.logoSize+'px'}if(p){p.style.backgroundImage=`url("${adminImage(adminLayout.profile)||'Kri.jpg'}")`;p.style.minHeight=adminLayout.profileHeight+'px';p.style.backgroundPosition=`${adminLayout.profileX}% ${adminLayout.profileY}%`}}
+        function renderEverything(){
+          const sv=linkedServices(),visible=sv.filter(x=>x.visible);dynamicServices.innerHTML=visible.map(x=>`<article class="service-card service-link-card" onclick="bookLinkedService('${ce(x.title).replace(/'/g,"\\'")}')">${x.image?`<img src="${ce(x.image)}" style="width:100%;height:180px;object-fit:cover;border-radius:8px">`:''}<h3>${ce(x.title)}</h3><p>${ce(x.description)}</p>${x.price?`<div class="service-price">${ce(x.price)}</div>`:''}<button class="btn-solid book-service-btn" type="button">Book / Zakazi</button></article>`).join('');
+          const select=document.getElementById('service'),cur=select.value;select.innerHTML='<option value="">Izaberite...</option>'+visible.map(x=>`<option value="${ce(x.title)}">${ce(x.title)}${x.price?' - '+ce(x.price):''}</option>`).join('');if([...select.options].some(o=>o.value===cur))select.value=cur;
+          if(document.getElementById('serviceManager'))serviceManager.innerHTML=sv.map(x=>`<div class="cms-row"><span><strong>${ce(x.title)}</strong><br>${ce(x.description)} ${x.price?' | '+ce(x.price):''} (${x.visible?'Visible':'Hidden'})</span><span class="cms-actions"><button class="btn-small" onclick="moveLinkedService(${x.id},-1)">Up</button><button class="btn-small" onclick="moveLinkedService(${x.id},1)">Down</button><button class="btn-small" onclick="editLinkedService(${x.id})">Edit</button><button class="btn-small" onclick="toggleLinkedService(${x.id})">Show/Hide</button><button class="btn-small btn-danger" onclick="deleteLinkedService(${x.id})">Delete</button></span></div>`).join('');
+          const c=cget('arfianka_contact',{phone:'',email:'',address:'',visible:false});publicContactSection=document.getElementById('public-contact-section');publicContactSection.style.display=c.visible?'block':'none';publicContact.innerHTML=`${c.phone?`<a href="tel:${ce(c.phone)}">☎ ${ce(c.phone)}</a>`:''}${c.email?`<a href="mailto:${ce(c.email)}">✉ ${ce(c.email)}</a>`:''}<div>${ce(c.address)}</div>`;if(document.getElementById('contactPhoneAdmin')){contactPhoneAdmin.value=c.phone;contactEmailAdmin.value=c.email;contactAddressAdmin.value=c.address;contactVisibleAdmin.checked=c.visible}
+          const es=cget('arfianka_employees',[]);document.getElementById('public-employees-section').style.display=es.some(x=>x.visible)?'block':'none';publicEmployees.innerHTML=es.filter(x=>x.visible).map(x=>`<article class="content-card">${x.image?`<img src="${ce(x.image)}">`:''}<h3>${ce(x.name)}</h3><p>${ce(x.role)}</p><p>${ce(x.phone)}<br>${ce(x.email)}</p></article>`).join('');if(document.getElementById('employeeManager'))employeeManager.innerHTML=es.map(x=>`<div class="cms-row"><span>${ce(x.name)} (${x.visible?'Visible':'Hidden'})</span><span><button class="btn-small" onclick="toggleContent('arfianka_employees',${x.id})">Show/Hide</button> <button class="btn-small btn-danger" onclick="deleteContent('arfianka_employees',${x.id})">Delete</button></span></div>`).join('');
+          const ms=cget('arfianka_modules',[]);document.getElementById('public-modules-section').style.display=ms.some(x=>x.visible)?'block':'none';publicModules.innerHTML=ms.filter(x=>x.visible).map(x=>`<article class="content-card">${x.image?`<img src="${ce(x.image)}">`:''}<h3>${ce(x.title)}</h3><p>${ce(x.text)}</p>${x.link?`<a href="${ce(x.link)}" target="_blank">Read more</a>`:''}</article>`).join('');if(document.getElementById('moduleManager'))moduleManager.innerHTML=ms.map(x=>`<div class="cms-row"><span>${ce(x.title)} (${x.visible?'Visible':'Hidden'})</span><span><button class="btn-small" onclick="toggleContent('arfianka_modules',${x.id})">Show/Hide</button> <button class="btn-small btn-danger" onclick="deleteContent('arfianka_modules',${x.id})">Delete</button></span></div>`).join('');
+          adminImages=cget('arfianka_images',adminImages);adminLayout=cget('arfianka_layout',adminLayout);applyAdminLayout();if(document.getElementById('imageLibraryAdmin'))imageLibraryAdmin.innerHTML=adminImages.map(x=>`<div class="image-item"><img src="${ce(x.src)}"><strong>${ce(x.name)}</strong><div class="cms-actions"><button class="btn-small" onclick="assignAdminImage('${x.id}','logo')">Logo</button><button class="btn-small" onclick="assignAdminImage('${x.id}','profile')">Profile</button></div></div>`).join('');if(document.getElementById('logoSizeAdmin')){logoSizeAdmin.value=adminLayout.logoSize;profileHeightAdmin.value=adminLayout.profileHeight;profileXAdmin.value=adminLayout.profileX;profileYAdmin.value=adminLayout.profileY;logoSizeOut.value=adminLayout.logoSize+'px';profileHeightOut.value=adminLayout.profileHeight+'px';profileXOut.value=adminLayout.profileX+'%';profileYOut.value=adminLayout.profileY+'%'}
         }
-        document.addEventListener('DOMContentLoaded',renderCms);
+        document.addEventListener('DOMContentLoaded',renderEverything);
     </script>
 </body>
 </html>
