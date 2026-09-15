@@ -746,7 +746,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
-        emailjs.init({publicKey:"FlF_fc4HV9FDLofhS"});
+        emailjs.init({publicKey:"FIF_fc4HV9FDLofhS"});
         const EMAIL_SERVICE="service_m0ve9d9", EMAIL_TEMPLATE="template_q8r1xwl", EMAIL_TO="kucna.nega.arfianka@gmail.com";
 
         // ---------------------------------------------------------
@@ -1025,27 +1025,88 @@
         }
 
         const ADMIN_EMAIL="admin@arfianka.se";
-        const ADMIN_PASSWORD="Aria-26";
-        const STAFF_STORAGE_KEY="arfianka_staff_accounts";
-        let currentAccess={role:null,name:'',email:''};
-        function getStaffAccounts(){try{return JSON.parse(localStorage.getItem(STAFF_STORAGE_KEY)||'[]')}catch(e){return []}}
-        function setStaffAccounts(items){localStorage.setItem(STAFF_STORAGE_KEY,JSON.stringify(items))}
-        function getCurrentRole(){return currentAccess.role||sessionStorage.getItem('arfianka_role')||''}
-        function setAccess(role,name,email){currentAccess={role,name,email};sessionStorage.setItem('arfianka_role',role);sessionStorage.setItem('arfianka_name',name);sessionStorage.setItem('arfianka_email',email);}
-        function clearAccess(){currentAccess={role:null,name:'',email:''};['arfianka_role','arfianka_name','arfianka_email'].forEach(k=>sessionStorage.removeItem(k));}
-        function applyAccessUI(){const role=getCurrentRole(),name=currentAccess.name||sessionStorage.getItem('arfianka_name')||'';document.getElementById('admin-dashboard').classList.toggle('employee-mode',role==='employee');document.getElementById('adminBrand').textContent=role==='employee'?'ArFiAnKA STAFF':'ArFiAnKA ADMIN';document.getElementById('signedInInfo').textContent=`${name||'Administrator'} · ${role==='employee'?'Booking access / Pristup rezervacijama':'Full access / Pun pristup'}`;['settings','services','content','images','employees'].forEach(n=>{const b=document.getElementById('tab-btn-'+n);if(b)b.style.display=role==='employee'?'none':''});switchAdminTab('bookings');}
-        async function loginAdmin(event){event.preventDefault();const email=document.getElementById('adminEmail').value.trim().toLowerCase(),pass=document.getElementById('adminPass').value;if(email===ADMIN_EMAIL&&pass===ADMIN_PASSWORD){setAccess('admin','Administrator',email);showAdminDashboard();applyAccessUI();return;}const account=getStaffAccounts().find(x=>x.email.toLowerCase()===email&&x.password===pass&&x.active);if(account){setAccess('employee',account.name,account.email);showAdminDashboard();applyAccessUI();return;}alert('Wrong email/password or inactive account. / Pogrešan email/lozinka ili neaktivan nalog.');}
-        async function logoutAdmin(){clearAccess();showPublicSite();}
+        let currentAccess={role:null,name:'',email:'',uid:''};
+        let staffCreatorApp=null;
+
+        function getCurrentRole(){return currentAccess.role||sessionStorage.getItem('arfianka_role')||'';}
+        function setAccess(role,name,email,uid){currentAccess={role,name,email,uid};sessionStorage.setItem('arfianka_role',role);sessionStorage.setItem('arfianka_name',name||'');sessionStorage.setItem('arfianka_email',email||'');sessionStorage.setItem('arfianka_uid',uid||'');}
+        function clearAccess(){currentAccess={role:null,name:'',email:'',uid:''};['arfianka_role','arfianka_name','arfianka_email','arfianka_uid'].forEach(k=>sessionStorage.removeItem(k));}
+
+        async function loadFirebaseRole(user){
+            if(user.email&&user.email.toLowerCase()===ADMIN_EMAIL)return {role:'admin',name:'Administrator',active:true};
+            const snap=await db.collection('staff').doc(user.uid).get();
+            if(!snap.exists)throw new Error('No staff role assigned / Nema dodeljene uloge');
+            const data=snap.data();
+            if(data.active===false)throw new Error('Account is inactive / Nalog nije aktivan');
+            return {role:data.role==='admin'?'admin':'employee',name:data.name||user.email,active:true};
+        }
+
+        function applyAccessUI(){
+            const role=getCurrentRole(),name=currentAccess.name||sessionStorage.getItem('arfianka_name')||'';
+            document.getElementById('admin-dashboard').classList.toggle('employee-mode',role==='employee');
+            document.getElementById('adminBrand').textContent=role==='employee'?'ArFiAnKA STAFF':'ArFiAnKA ADMIN';
+            document.getElementById('signedInInfo').textContent=`${name||'Administrator'} · ${role==='employee'?'Booking access / Pristup rezervacijama':'Full access / Pun pristup'}`;
+            ['settings','services','content','images','employees'].forEach(n=>{const b=document.getElementById('tab-btn-'+n);if(b)b.style.display=role==='employee'?'none':'';});
+            switchAdminTab('bookings');
+        }
+
+        async function loginAdmin(event){
+            event.preventDefault();
+            const email=document.getElementById('adminEmail').value.trim().toLowerCase();
+            const pass=document.getElementById('adminPass').value;
+            try{
+                const result=await auth.signInWithEmailAndPassword(email,pass);
+                const access=await loadFirebaseRole(result.user);
+                setAccess(access.role,access.name,result.user.email,result.user.uid);
+                showAdminDashboard();
+                applyAccessUI();
+            }catch(error){
+                console.error('Firebase login error:',error);
+                try{await auth.signOut();}catch(e){}
+                alert('Login failed / Prijava nije uspela: '+(error.message||error));
+            }
+        }
+
+        async function logoutAdmin(){clearAccess();try{await auth.signOut();}catch(e){}showPublicSite();}
 
         function clearStaffForm(){['staffAccountId','staffName','staffEmail','staffPassword'].forEach(id=>document.getElementById(id).value='');document.getElementById('staffActive').checked=true;document.getElementById('employeeFormTitle').textContent='Create employee / Kreiraj zaposlenog';}
-        function saveStaffAccount(){if(getCurrentRole()!=='admin')return;const id=document.getElementById('staffAccountId').value,name=document.getElementById('staffName').value.trim(),email=document.getElementById('staffEmail').value.trim().toLowerCase(),password=document.getElementById('staffPassword').value,active=document.getElementById('staffActive').checked;if(!name||!email||(!id&&password.length<6)){alert('Name, email and password of at least 6 characters are required. / Ime, email i lozinka od najmanje 6 znakova su obavezni.');return;}let items=getStaffAccounts();if(items.some(x=>x.email===email&&String(x.id)!==String(id))){alert('Email already exists. / Email već postoji.');return;}const pos=items.findIndex(x=>String(x.id)===String(id));const item={id:id||String(Date.now()),name,email,password:password||(pos>=0?items[pos].password:''),active,createdAt:pos>=0?items[pos].createdAt:new Date().toISOString()};if(pos>=0)items[pos]=item;else items.push(item);setStaffAccounts(items);clearStaffForm();renderStaffAccounts();}
-        function renderStaffAccounts(){const box=document.getElementById('staffAccountsList');if(!box)return;const items=getStaffAccounts();box.innerHTML=items.length?items.map(x=>`<div class="employee-list-row"><div><strong>${escapeServiceHtml(x.name)}</strong><small>${escapeServiceHtml(x.email)}</small><br><span class="role-chip">${x.active?'Active / Aktivan':'Inactive / Neaktivan'}</span></div><div class="employee-actions"><button class="employee-edit" onclick="editStaffAccount('${x.id}')">Edit</button><button class="employee-toggle" onclick="toggleStaffAccount('${x.id}')">${x.active?'Disable':'Enable'}</button><button class="employee-delete" onclick="deleteStaffAccount('${x.id}')">Delete</button></div></div>`).join(''):'<p style="color:#6b7280;">No employee accounts. / Nema naloga zaposlenih.</p>';}
-        function editStaffAccount(id){const x=getStaffAccounts().find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('staffAccountId').value=x.id;document.getElementById('staffName').value=x.name;document.getElementById('staffEmail').value=x.email;document.getElementById('staffPassword').value='';document.getElementById('staffActive').checked=x.active;document.getElementById('employeeFormTitle').textContent='Edit employee / Uredi zaposlenog';window.scrollTo({top:0,behavior:'smooth'});}
-        function toggleStaffAccount(id){let items=getStaffAccounts(),x=items.find(v=>String(v.id)===String(id));if(x)x.active=!x.active;setStaffAccounts(items);renderStaffAccounts();}
-        function deleteStaffAccount(id){if(!confirm('Delete employee login? / Obrisati nalog zaposlenog?'))return;setStaffAccounts(getStaffAccounts().filter(x=>String(x.id)!==String(id)));renderStaffAccounts();}
 
-        let allBookings=[];
-        function statusGroup(status){status=status||'';if(status.includes('Cancelled')||status.includes('Otkazano'))return 'cancelled';if(status.includes('Resolved')||status.includes('Rešeno'))return 'solved';return 'new';}
+        async function saveStaffAccount(){
+            if(getCurrentRole()!=='admin')return;
+            const uid=document.getElementById('staffAccountId').value;
+            const name=document.getElementById('staffName').value.trim();
+            const email=document.getElementById('staffEmail').value.trim().toLowerCase();
+            const password=document.getElementById('staffPassword').value;
+            const active=document.getElementById('staffActive').checked;
+            if(!name||!email||(!uid&&password.length<6)){alert('Name, email and password of at least 6 characters are required. / Ime, email i lozinka od najmanje 6 znakova su obavezni.');return;}
+            try{
+                let staffUid=uid;
+                if(!staffUid){
+                    if(!staffCreatorApp){try{staffCreatorApp=firebase.app('staffCreator');}catch(e){staffCreatorApp=firebase.initializeApp(firebaseConfig,'staffCreator');}}
+                    const secondaryAuth=staffCreatorApp.auth();
+                    const created=await secondaryAuth.createUserWithEmailAndPassword(email,password);
+                    staffUid=created.user.uid;
+                    await secondaryAuth.signOut();
+                }
+                await db.collection('staff').doc(staffUid).set({name,email,role:'employee',active,updatedAt:new Date().toISOString()},{merge:true});
+                clearStaffForm();renderStaffAccounts();alert('Employee saved in Firebase. / Zaposleni je sačuvan u Firebase.');
+            }catch(error){console.error(error);alert('Employee could not be saved / Zaposleni nije sačuvan: '+(error.message||error));}
+        }
+
+        async function renderStaffAccounts(){
+            const box=document.getElementById('staffAccountsList');if(!box)return;
+            box.innerHTML='<p style="color:#6b7280;">Loading... / Učitavanje...</p>';
+            try{
+                const snap=await db.collection('staff').orderBy('name').get();
+                const items=[];snap.forEach(doc=>items.push({id:doc.id,...doc.data()}));
+                box.innerHTML=items.length?items.map(x=>`<div class="employee-list-row"><div><strong>${escapeServiceHtml(x.name||'')}</strong><small>${escapeServiceHtml(x.email||'')}</small><br><span class="role-chip">${x.active===false?'Inactive / Neaktivan':'Active / Aktivan'}</span></div><div class="employee-actions"><button class="employee-edit" onclick="editStaffAccount('${x.id}')">Edit</button><button class="employee-toggle" onclick="toggleStaffAccount('${x.id}',${x.active===false})">${x.active===false?'Enable':'Disable'}</button><button class="employee-delete" onclick="deleteStaffAccount('${x.id}')">Remove role</button></div></div>`).join(''):'<p style="color:#6b7280;">No employee accounts. / Nema naloga zaposlenih.</p>';
+            }catch(error){box.innerHTML=`<p style="color:#b42318;">${escapeServiceHtml(error.message||String(error))}</p>`;}
+        }
+
+        async function editStaffAccount(uid){const snap=await db.collection('staff').doc(uid).get();if(!snap.exists)return;const x=snap.data();document.getElementById('staffAccountId').value=uid;document.getElementById('staffName').value=x.name||'';document.getElementById('staffEmail').value=x.email||'';document.getElementById('staffEmail').readOnly=true;document.getElementById('staffPassword').value='';document.getElementById('staffPassword').placeholder='Password unchanged in Firebase Auth';document.getElementById('staffActive').checked=x.active!==false;document.getElementById('employeeFormTitle').textContent='Edit employee / Uredi zaposlenog';}
+        async function toggleStaffAccount(uid,enable){await db.collection('staff').doc(uid).set({active:enable,updatedAt:new Date().toISOString()},{merge:true});renderStaffAccounts();}
+        async function deleteStaffAccount(uid){if(!confirm('Remove employee access? The Firebase Auth user is not deleted. / Ukloniti pristup zaposlenom?'))return;await db.collection('staff').doc(uid).delete();renderStaffAccounts();}
+
         function fetchBookings(){const tbody=document.getElementById('bookingsTableBody');db.collection('bookings').orderBy('dato','desc').onSnapshot(snapshot=>{allBookings=[];snapshot.forEach(doc=>allBookings.push({id:doc.id,...doc.data()}));updateBookingKpis();applyBookingFilters();},error=>{tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:red;">Database error: ${error.message}</td></tr>`;});}
         function updateBookingKpis(){document.getElementById('kpiTotal').textContent=allBookings.length;document.getElementById('kpiNew').textContent=allBookings.filter(x=>statusGroup(x.status)==='new').length;document.getElementById('kpiSolved').textContent=allBookings.filter(x=>statusGroup(x.status)==='solved').length;document.getElementById('kpiCancelled').textContent=allBookings.filter(x=>statusGroup(x.status)==='cancelled').length;}
         function applyBookingFilters(){const q=(document.getElementById('bookingSearch')?.value||'').toLowerCase(),status=document.getElementById('bookingStatusFilter')?.value||'all',tbody=document.getElementById('bookingsTableBody');const rows=allBookings.filter(x=>{const hay=[x.navn,x.telefon,x.email,x.tjeneste,x.besked].join(' ').toLowerCase();return(!q||hay.includes(q))&&(status==='all'||statusGroup(x.status)===status)});tbody.innerHTML='';if(!rows.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:#687386;">No matching bookings. / Nema odgovarajućih rezervacija.</td></tr>';return;}rows.forEach(data=>renderTableRow(data.id,data,tbody));}
