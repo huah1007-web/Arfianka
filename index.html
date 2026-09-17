@@ -744,9 +744,23 @@
             measurementId: "G-J8V7DB0DF7"
         };
         
-        firebase.initializeApp(firebaseConfig);
+        // Initialize Firebase only once. This prevents duplicate-app errors.
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
         const db = firebase.firestore();
         const auth = firebase.auth();
+
+        // Keep the login active when the page is refreshed.
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(error) {
+            console.error("Firebase Auth persistence error:", error);
+        });
+
+        // Firestore network errors will now be easier to diagnose in the console.
+        db.enableNetwork().catch(function(error) {
+            console.error("Firestore network error:", error);
+        });
         const DEFAULT_EMAIL_CONFIG={serviceId:"service_m0ve9d9",notificationTemplateId:"template_q8r1xwl",autoReplyTemplateId:"template_wu2qsed",toEmail:"kucna.nega.arfianka@gmail.com",publicKey:"FIF_fc4HV9FDLofhS",sendAutoReply:true};
         function getEmailConfig(){try{return {...DEFAULT_EMAIL_CONFIG,...JSON.parse(localStorage.getItem("arfianka_email_config")||"{}")}}catch(e){return {...DEFAULT_EMAIL_CONFIG}}}
         function initEmailJS(){const c=getEmailConfig();if(window.emailjs&&c.publicKey)emailjs.init({publicKey:c.publicKey})}
@@ -1010,14 +1024,15 @@
                 tjeneste: document.getElementById('service').value,
                 besked: document.getElementById('message').value,
                 status: "New / Novo",
-                dato: new Date().toISOString()
+                dato: firebase.firestore.FieldValue.serverTimestamp(),
+                datoIso: new Date().toISOString()
             };
 
             try {
                 await db.collection("bookings").add(bookingData);
                 try {
                     const c=getEmailConfig();initEmailJS();
-                    const params={to_email:c.toEmail,to_name:"ArFiAnKA",from_name:bookingData.navn,from_email:bookingData.email,navn:bookingData.navn,telefon:bookingData.telefon,email:bookingData.email,customer_email:bookingData.email,reply_to:bookingData.email,tjeneste:bookingData.tjeneste,besked:bookingData.besked||"Ingen besked",message:bookingData.besked||"Ingen besked",dato:new Date(bookingData.dato).toLocaleString("da-DK")};
+                    const params={to_email:c.toEmail,to_name:"ArFiAnKA",from_name:bookingData.navn,from_email:bookingData.email,navn:bookingData.navn,telefon:bookingData.telefon,email:bookingData.email,customer_email:bookingData.email,reply_to:bookingData.email,tjeneste:bookingData.tjeneste,besked:bookingData.besked||"Ingen besked",message:bookingData.besked||"Ingen besked",dato:new Date(bookingData.datoIso).toLocaleString("da-DK")};
                     await emailjs.send(c.serviceId,c.notificationTemplateId,params,{publicKey:c.publicKey});
                     if(c.sendAutoReply&&c.autoReplyTemplateId){await emailjs.send(c.serviceId,c.autoReplyTemplateId,{...params,to_email:bookingData.email,to_name:bookingData.navn,reply_to:c.toEmail},{publicKey:c.publicKey});}
                     alert("Booking saved and email sent. / Rezervacija je sačuvana i email je poslat.");
@@ -1078,7 +1093,13 @@
 
         async function logoutAdmin(){clearAccess();try{await auth.signOut();}catch(e){}showPublicSite();}
 
-        function clearStaffForm(){['staffAccountId','staffName','staffEmail','staffPassword'].forEach(id=>document.getElementById(id).value='');document.getElementById('staffActive').checked=true;document.getElementById('employeeFormTitle').textContent='Create employee / Kreiraj zaposlenog';}
+        function clearStaffForm(){
+            ['staffAccountId','staffName','staffEmail','staffPassword'].forEach(id=>document.getElementById(id).value='');
+            document.getElementById('staffEmail').readOnly=false;
+            document.getElementById('staffPassword').placeholder='';
+            document.getElementById('staffActive').checked=true;
+            document.getElementById('employeeFormTitle').textContent='Create employee / Kreiraj zaposlenog';
+        }
 
         async function saveStaffAccount(){
             if(getCurrentRole()!=='admin')return;
@@ -1119,7 +1140,7 @@
         let bookingsUnsubscribe=null;
         function bookingSafe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
         function bookingStatusGroup(v){const x=String(v||'').toLowerCase();if(x.includes('cancel')||x.includes('otkaz'))return 'cancelled';if(x.includes('resolved')||x.includes('solved')||x.includes('reseno')||x.includes('rešeno'))return 'solved';return 'new';}
-        function normalizeBooking(doc){const d=doc||{};let date='-';const source=d.dato||d.date||d.createdAt;if(source){try{const dt=source.toDate?source.toDate():new Date(source);if(!Number.isNaN(dt.getTime()))date=dt.toLocaleString('da-DK')}catch(e){}}return {navn:String(d.navn||d.name||'-'),telefon:String(d.telefon||d.phone||'-'),email:String(d.email||'-'),tjeneste:String(d.tjeneste||d.service||'-'),besked:String(d.besked||d.message||'-'),status:String(d.status||'New / Novo'),date};}
+        function normalizeBooking(doc){const d=doc||{};let date='-';const source=d.dato||d.datoIso||d.date||d.createdAt;if(source){try{const dt=source.toDate?source.toDate():new Date(source);if(!Number.isNaN(dt.getTime()))date=dt.toLocaleString('da-DK')}catch(e){}}return {navn:String(d.navn||d.name||'-'),telefon:String(d.telefon||d.phone||'-'),email:String(d.email||'-'),tjeneste:String(d.tjeneste||d.service||'-'),besked:String(d.besked||d.message||'-'),status:String(d.status||'New / Novo'),date};}
         function fetchBookings(){const tbody=document.getElementById('bookingsTableBody');if(!tbody)return;tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px">Loading data... / Učitavanje podataka...</td></tr>';if(bookingsUnsubscribe)bookingsUnsubscribe();bookingsUnsubscribe=db.collection('bookings').orderBy('dato','desc').onSnapshot(snapshot=>{allBookings=[];snapshot.forEach(doc=>allBookings.push({id:doc.id,...normalizeBooking(doc.data())}));updateBookingKpis();applyBookingFilters();},error=>{console.error('Firestore error',error);tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:red;padding:30px">Database error: '+bookingSafe(error.message||error)+'</td></tr>';});}
         function updateBookingKpis(){const by=id=>document.getElementById(id);if(by('kpiTotal'))by('kpiTotal').textContent=allBookings.length;if(by('kpiNew'))by('kpiNew').textContent=allBookings.filter(x=>bookingStatusGroup(x.status)==='new').length;if(by('kpiSolved'))by('kpiSolved').textContent=allBookings.filter(x=>bookingStatusGroup(x.status)==='solved').length;if(by('kpiCancelled'))by('kpiCancelled').textContent=allBookings.filter(x=>bookingStatusGroup(x.status)==='cancelled').length;}
         function applyBookingFilters(){const q=(document.getElementById('bookingSearch')?.value||'').toLowerCase(),wanted=document.getElementById('bookingStatusFilter')?.value||'all',tbody=document.getElementById('bookingsTableBody');const rows=allBookings.filter(x=>{const hay=[x.navn,x.telefon,x.email,x.tjeneste,x.besked].join(' ').toLowerCase();return(!q||hay.includes(q))&&(wanted==='all'||bookingStatusGroup(x.status)===wanted)});tbody.innerHTML='';if(!rows.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px">No matching bookings / Nema rezervacija</td></tr>';return;}rows.forEach(x=>{try{renderTableRow(x.id,x,tbody)}catch(e){console.error('Row error',x,e)}});}
@@ -1194,6 +1215,27 @@ This cannot be undone. / Ovo se ne može poništiti.`)) return;
         async function testAdminNotification(){saveEmailConfiguration();const c=getEmailConfig();await runEmailTest(c.notificationTemplateId,c.toEmail,"Admin notification")}
         async function testCustomerAutoReply(){saveEmailConfiguration();const c=getEmailConfig(),to=emailTestRecipient.value.trim();if(!to)return alert("Enter a test customer email");await runEmailTest(c.autoReplyTemplateId,to,"Customer Auto-Reply")}
         document.addEventListener("DOMContentLoaded",loadEmailConfiguration);
+
+        // Restore the authenticated role after refresh and reject users without a valid role.
+        auth.onAuthStateChanged(async function(user) {
+            if (!user) {
+                clearAccess();
+                return;
+            }
+
+            try {
+                const access = await loadFirebaseRole(user);
+                setAccess(access.role, access.name, user.email || '', user.uid);
+
+                if (document.getElementById('admin-dashboard').style.display === 'block') {
+                    applyAccessUI();
+                }
+            } catch (error) {
+                console.error('Role restoration failed:', error);
+                clearAccess();
+                try { await auth.signOut(); } catch (signOutError) {}
+            }
+        });
     </script>
 </body>
 </html>
