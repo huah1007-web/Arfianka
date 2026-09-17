@@ -1115,7 +1115,7 @@
         async function editStaffAccount(uid){const snap=await db.collection('staff').doc(uid).get();if(!snap.exists)return;const x=snap.data();document.getElementById('staffAccountId').value=uid;document.getElementById('staffName').value=x.name||'';document.getElementById('staffEmail').value=x.email||'';document.getElementById('staffEmail').readOnly=true;document.getElementById('staffPassword').value='';document.getElementById('staffPassword').placeholder='Password unchanged in Firebase Auth';document.getElementById('staffActive').checked=x.active!==false;document.getElementById('employeeFormTitle').textContent='Edit employee / Uredi zaposlenog';}
         async function toggleStaffAccount(uid,enable){await db.collection('staff').doc(uid).set({active:enable,updatedAt:new Date().toISOString()},{merge:true});renderStaffAccounts();}
         async function deleteStaffAccount(uid){if(!confirm('Remove employee access? The Firebase Auth user is not deleted. / Ukloniti pristup zaposlenom?'))return;await db.collection('staff').doc(uid).delete();renderStaffAccounts();}
-
+        let allBookings = [];
         let bookingsUnsubscribe=null;
         function bookingSafe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
         function bookingStatusGroup(v){const x=String(v||'').toLowerCase();if(x.includes('cancel')||x.includes('otkaz'))return 'cancelled';if(x.includes('resolved')||x.includes('solved')||x.includes('reseno')||x.includes('rešeno'))return 'solved';return 'new';}
