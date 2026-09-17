@@ -794,13 +794,30 @@
             console.info("Firebase CMS connected", snap.exists ? "data loaded" : "empty state");
           }catch(error){
             console.error("Firebase CMS load failed",error);
-            setTimeout(()=>alert("Firebase CMS connection failed: "+(error.code||error.message||error)),0);
+            setTimeout(()=>alert("Firestore read failed ["+(error.code||"unknown")+"]: "+(error.message||error)+"\nProject: "+firebaseConfig.projectId+"\nPath: siteData/cmsState"),0);
           }finally{
             applyingRemoteCms=false;
             cmsReadyResolve();
           }
         }
-        loadCmsFromFirebase();
+        // Wait for Firebase Auth to restore the saved session before reading Firestore.
+        let initialAuthStateHandled = false;
+        auth.onAuthStateChanged(async function(user) {
+          if (initialAuthStateHandled) return;
+          initialAuthStateHandled = true;
+          console.info("Firebase auth state restored:", user ? user.email : "public visitor");
+          await loadCmsFromFirebase();
+        }, function(error) {
+          console.error("Firebase auth initialization failed", error);
+          cmsReadyResolve();
+        });
+        setTimeout(function(){
+          if(!initialAuthStateHandled){
+            initialAuthStateHandled=true;
+            console.warn("Firebase Auth initialization timed out; loading public CMS data.");
+            loadCmsFromFirebase();
+          }
+        },8000);
 
         async function uploadFileToFirebase(file,folder){
           if(!auth.currentUser) throw new Error("Admin login required before uploading files");
@@ -956,22 +973,27 @@
           }catch(error){console.error(error);alert('Firebase upload failed: '+(error.code||error.message||error));}
         }
 
-        function saveAboutText() {
+        async function saveAboutText() {
             const name = document.getElementById('editAboutName').value;
             const role = document.getElementById('editAboutRole').value;
             const p1 = document.getElementById('editAboutP1').value;
             const p2 = document.getElementById('editAboutP2').value;
-            
-            cmsSetItem("arfianka_about_name", name);
-            cmsSetItem("arfianka_about_role", role);
-            cmsSetItem("arfianka_about_p1", p1);
-            cmsSetItem("arfianka_about_p2", p2);
-            cmsSetItem("arfianka_about_deleted", "false"); 
-            
-            applyLocalEdits();
-            alert("Text saved and updated! / Tekst je sačuvan i ažuriran!");
+            try {
+                await Promise.all([
+                    cmsSetItem("arfianka_about_name", name),
+                    cmsSetItem("arfianka_about_role", role),
+                    cmsSetItem("arfianka_about_p1", p1),
+                    cmsSetItem("arfianka_about_p2", p2),
+                    cmsSetItem("arfianka_about_deleted", "false")
+                ]);
+                applyLocalEdits();
+                alert("Saved in Firebase / Sačuvano u Firebase");
+            } catch (error) {
+                console.error("About text save failed", error);
+                alert("Firestore save failed ["+(error.code||"unknown")+"]: "+(error.message||error));
+            }
         }
-        
+
         function deleteAboutText() {
             if(confirm("Delete 'About Us' section? / Da li ste sigurni da želite da obrišete sekciju 'O nama'?")) {
                 cmsSetItem("arfianka_about_deleted", "true");
