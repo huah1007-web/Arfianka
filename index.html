@@ -753,79 +753,61 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
         const storage = firebase.storage();
+        const CMS_DOC = db.collection("siteData").doc("cmsState");
+        const CMS_KEYS = [
+          "arfianka_email_config","arfianka_logo","arfianka_profile","arfianka_background",
+          "arfianka_about_name","arfianka_about_role","arfianka_about_p1","arfianka_about_p2",
+          "arfianka_about_deleted","arfianka_services","arfianka_library","arfianka_layout_plus",
+          "arfianka_linked_services","arfianka_contact_plus","arfianka_employees_plus",
+          "arfianka_modules_plus"
+        ];
+        let cmsReadyResolve;
+        const firebaseCmsReady = new Promise(resolve => cmsReadyResolve = resolve);
+        let applyingRemoteCms = false;
 
-        // FIREBASE CMS BRIDGE
-        // The existing CMS reads synchronously from localStorage. We first hydrate that cache
-        // from Firestore, then mirror every CMS write back to Firestore. This keeps the UI
-        // compatible while making Firebase the shared source of truth across devices.
-        const CMS_STATE_DOC = db.collection("siteData").doc("cmsState");
-        const FIREBASE_CMS_KEYS = new Set([
-            "arfianka_email_config", "arfianka_logo", "arfianka_profile",
-            "arfianka_background", "arfianka_about_name", "arfianka_about_role",
-            "arfianka_about_p1", "arfianka_about_p2", "arfianka_about_deleted",
-            "arfianka_services", "arfianka_library", "arfianka_layout_plus",
-            "arfianka_linked_services", "arfianka_contact_plus",
-            "arfianka_employees_plus", "arfianka_modules_plus"
-        ]);
-        const nativeLocalGet = localStorage.getItem.bind(localStorage);
-        const nativeLocalSet = localStorage.setItem.bind(localStorage);
-        const nativeLocalRemove = localStorage.removeItem.bind(localStorage);
-        let cmsHydrated = false;
-
-        function firebaseFieldName(key) {
-            return key.replace(/[^A-Za-z0-9_]/g, "_");
+        function cmsField(key){ return key.replace(/[^A-Za-z0-9_]/g,"_"); }
+        async function cmsSetItem(key,value){
+          localStorage.setItem(key,String(value));
+          if(!CMS_KEYS.includes(key) || applyingRemoteCms) return;
+          const update={}; update[cmsField(key)]=String(value);
+          update.updatedAt=firebase.firestore.FieldValue.serverTimestamp();
+          update.updatedBy=auth.currentUser ? (auth.currentUser.email || auth.currentUser.uid) : "public";
+          await CMS_DOC.set(update,{merge:true});
         }
-
-        const firebaseCmsReady = (async function hydrateCmsFromFirebase() {
-            try {
-                const snapshot = await CMS_STATE_DOC.get();
-                if (snapshot.exists) {
-                    const remote = snapshot.data() || {};
-                    FIREBASE_CMS_KEYS.forEach(function(key) {
-                        const field = firebaseFieldName(key);
-                        if (Object.prototype.hasOwnProperty.call(remote, field)) {
-                            nativeLocalSet(key, remote[field]);
-                        } else {
-                            nativeLocalRemove(key);
-                        }
-                    });
-                }
-                cmsHydrated = true;
-                console.info("Firebase CMS state loaded.");
-            } catch (error) {
-                cmsHydrated = true;
-                console.error("Could not load CMS state from Firebase:", error);
+        async function cmsRemoveItem(key){
+          localStorage.removeItem(key);
+          if(!CMS_KEYS.includes(key) || applyingRemoteCms) return;
+          const update={}; update[cmsField(key)]=firebase.firestore.FieldValue.delete();
+          await CMS_DOC.set(update,{merge:true});
+        }
+        async function loadCmsFromFirebase(){
+          try{
+            const snap=await CMS_DOC.get();
+            applyingRemoteCms=true;
+            if(snap.exists){
+              const data=snap.data()||{};
+              CMS_KEYS.forEach(key=>{
+                const field=cmsField(key);
+                if(Object.prototype.hasOwnProperty.call(data,field)) localStorage.setItem(key,data[field]);
+              });
             }
-        })();
+            console.info("Firebase CMS connected", snap.exists ? "data loaded" : "empty state");
+          }catch(error){
+            console.error("Firebase CMS load failed",error);
+            setTimeout(()=>alert("Firebase CMS connection failed: "+(error.code||error.message||error)),0);
+          }finally{
+            applyingRemoteCms=false;
+            cmsReadyResolve();
+          }
+        }
+        loadCmsFromFirebase();
 
-        localStorage.setItem = function(key, value) {
-            nativeLocalSet(key, value);
-            if (cmsHydrated && FIREBASE_CMS_KEYS.has(key)) {
-                const update = {};
-                update[firebaseFieldName(key)] = String(value);
-                CMS_STATE_DOC.set(update, { merge: true }).catch(function(error) {
-                    console.error("Firebase CMS save failed for " + key + ":", error);
-                    alert("Could not save in Firebase / Nije moguće sačuvati u Firebase: " + (error.message || error));
-                });
-            }
-        };
-
-        localStorage.removeItem = function(key) {
-            nativeLocalRemove(key);
-            if (cmsHydrated && FIREBASE_CMS_KEYS.has(key)) {
-                const update = {};
-                update[firebaseFieldName(key)] = firebase.firestore.FieldValue.delete();
-                CMS_STATE_DOC.set(update, { merge: true }).catch(console.error);
-            }
-        };
-
-        async function uploadFileToFirebase(file, folder) {
-            if (!file) return "";
-            const safeName = file.name.replace(/[^A-Za-z0-9._-]/g, "_");
-            const path = "site/" + folder + "/" + Date.now() + "_" + safeName;
-            const ref = storage.ref().child(path);
-            const snapshot = await ref.put(file, { contentType: file.type || "application/octet-stream" });
-            return await snapshot.ref.getDownloadURL();
+        async function uploadFileToFirebase(file,folder){
+          if(!auth.currentUser) throw new Error("Admin login required before uploading files");
+          const safe=(file.name||"file").replace(/[^A-Za-z0-9._-]/g,"_");
+          const ref=storage.ref().child("site/"+folder+"/"+Date.now()+"_"+safe);
+          const snap=await ref.put(file,{contentType:file.type||"application/octet-stream"});
+          return await snap.ref.getDownloadURL();
         }
 
         // Keep the login active when the page is refreshed.
@@ -963,20 +945,15 @@
             renderClientDropdown();
         }
 
-        async function handleImageUpload(event, type) {
-            const file = event.target.files[0];
-            if (!file) return;
-            try {
-                const url = await uploadFileToFirebase(file, type);
-                if (type === 'logo') localStorage.setItem("arfianka_logo", url);
-                else if (type === 'profile') localStorage.setItem("arfianka_profile", url);
-                else if (type === 'background') localStorage.setItem("arfianka_background", url);
-                applyLocalEdits();
-                alert("Image saved in Firebase Storage. / Slika je sačuvana u Firebase Storage.");
-            } catch (error) {
-                console.error("Firebase Storage upload failed:", error);
-                alert("Upload failed / Otpremanje nije uspelo: " + (error.message || error));
-            }
+        async function handleImageUpload(event,type){
+          const file=event.target.files[0]; if(!file)return;
+          try{
+            const url=await uploadFileToFirebase(file,type);
+            const key=type==='logo'?'arfianka_logo':type==='profile'?'arfianka_profile':'arfianka_background';
+            await cmsSetItem(key,url);
+            applyLocalEdits();
+            alert('Saved in Firebase / Sačuvano u Firebase');
+          }catch(error){console.error(error);alert('Firebase upload failed: '+(error.code||error.message||error));}
         }
 
         function saveAboutText() {
@@ -985,11 +962,11 @@
             const p1 = document.getElementById('editAboutP1').value;
             const p2 = document.getElementById('editAboutP2').value;
             
-            localStorage.setItem("arfianka_about_name", name);
-            localStorage.setItem("arfianka_about_role", role);
-            localStorage.setItem("arfianka_about_p1", p1);
-            localStorage.setItem("arfianka_about_p2", p2);
-            localStorage.setItem("arfianka_about_deleted", "false"); 
+            cmsSetItem("arfianka_about_name", name);
+            cmsSetItem("arfianka_about_role", role);
+            cmsSetItem("arfianka_about_p1", p1);
+            cmsSetItem("arfianka_about_p2", p2);
+            cmsSetItem("arfianka_about_deleted", "false"); 
             
             applyLocalEdits();
             alert("Text saved and updated! / Tekst je sačuvan i ažuriran!");
@@ -997,7 +974,7 @@
         
         function deleteAboutText() {
             if(confirm("Delete 'About Us' section? / Da li ste sigurni da želite da obrišete sekciju 'O nama'?")) {
-                localStorage.setItem("arfianka_about_deleted", "true");
+                cmsSetItem("arfianka_about_deleted", "true");
                 applyLocalEdits();
                 alert("The section is now hidden. / Sekcija je sada skrivena.");
             }
@@ -1036,7 +1013,7 @@
             });
         }
         
-        function persistServices(){localStorage.setItem("arfianka_services",JSON.stringify(currentServices));renderAdminServicesList();renderClientDropdown();}
+        function persistServices(){cmsSetItem("arfianka_services",JSON.stringify(currentServices));renderAdminServicesList();renderClientDropdown();}
         function addNewService(){const nameEl=document.getElementById('newServiceInput'),priceEl=document.getElementById('newServicePrice');const name=nameEl.value.trim(),price=priceEl.value.trim();if(!name){alert("Please enter a service name. / Molimo unesite naziv usluge.");nameEl.focus();return;}const value=price?`${name} - ${price}`:name;if(currentServices.some(x=>x.toLowerCase()===value.toLowerCase())){alert("This service already exists. / Ova usluga već postoji.");return;}currentServices.push(value);nameEl.value='';priceEl.value='';persistServices();nameEl.focus();}
         function editService(index){editingServiceIndex=index;renderAdminServicesList();}
         function saveServiceEdit(index){const input=document.getElementById(`serviceEditInput-${index}`),value=input?input.value.trim():'';if(!value){alert("Service name cannot be empty. / Naziv usluge ne može biti prazan.");return;}currentServices[index]=value;editingServiceIndex=null;persistServices();}
@@ -1261,46 +1238,42 @@ This cannot be undone. / Ovo se ne može poništiti.`)) return;
             }
         }
 
-        const xget=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}},xset=(k,v)=>{localStorage.setItem(k,JSON.stringify(v));renderExtendedCms()},xe=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const xget=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}},xset=(k,v)=>{cmsSetItem(k,JSON.stringify(v)).then(()=>console.info('Saved in Firebase:',k)).catch(e=>{console.error(e);alert('Firebase save failed: '+(e.code||e.message||e))});renderExtendedCms()},xe=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         const defaultServices=[{id:1,title:'Onlajn sastanak za sigurnost',description:'Razgovor preko računara/tableta o zdravlju, blagostanju ili praktičnim izazovima.',price:'',image:'',visible:true},{id:2,title:'Praktična i lična nega',description:'Pomoć pri kupovini, kuvanju i ličnoj higijeni sa poštovanjem i dostojanstvom.',price:'',image:'',visible:true},{id:3,title:'Zdravstveno savetovanje',description:'Ovlašćena procena, upravljanje lekovima i dijalog sa opštinom/lekarom.',price:'',image:'',visible:true}];
         let lib=xget('arfianka_library',[{id:'default-logo',name:'Current logo',src:'a3b1c038-c74c-49f8-801e-e018737ac673.jpg'},{id:'default-profile',name:'Current profile',src:'Kri.jpg'}]),layout=xget('arfianka_layout_plus',{logo:'default-logo',profile:'default-profile',hero:'',logoHeight:76,heroHeight:700,heroZoom:100,heroX:50,heroY:50,profileHeight:450,profileX:50,profileY:20,profileFit:'cover'});const libSrc=id=>lib.find(x=>x.id===id)?.src||'';
         function saveLinkedService(){let a=xget('arfianka_linked_services',defaultServices),id=+svcId.value,o={id:id||Date.now(),title:svcTitle.value.trim(),description:svcDesc.value.trim(),price:svcPrice.value.trim(),image:svcImage.value,visible:svcVisible.checked},i=a.findIndex(x=>x.id===id);if(!o.title)return alert('Title required');i>=0?a[i]=o:a.push(o);xset('arfianka_linked_services',a);clearLinkedService()}function editLinkedService(id){let x=xget('arfianka_linked_services',defaultServices).find(v=>v.id===id);svcId.value=x.id;svcTitle.value=x.title;svcDesc.value=x.description;svcPrice.value=x.price;svcImage.value=x.image;svcVisible.checked=x.visible}function clearLinkedService(){svcId.value=svcTitle.value=svcDesc.value=svcPrice.value=''}function toggleX(k,id){let a=xget(k,[]),e=a.find(v=>v.id===id);if(e)e.visible=!e.visible;xset(k,a)}function deleteX(k,id){if(confirm('Delete?'))xset(k,xget(k,[]).filter(x=>x.id!==id))}function moveX(k,id,d){let a=xget(k,[]),i=a.findIndex(x=>x.id===id),j=i+d;if(i>=0&&j>=0&&j<a.length){[a[i],a[j]]=[a[j],a[i]];xset(k,a)}}function bookService(t){service.value=t;book.scrollIntoView({behavior:'smooth'})}
         function saveContactInfo(){xset('arfianka_contact_plus',{phone:contactPhone.value,email:contactEmail.value,address:contactAddress.value,visible:contactVisible.checked})}
         function updateEmployeePreview(){if(!document.getElementById('empPreview'))return;empHeightOut.value=empHeight.value+'px';empXOut.value=empX.value+'%';empYOut.value=empY.value+'%';empPreview.style.height=empHeight.value+'px';empPreview.style.width='220px';empPreview.style.objectFit=empFit.value;empPreview.style.objectPosition=empX.value+'% '+empY.value+'%';if(empImage.value){empPreview.src=empImage.value;empPreview.style.display='block'}}
         function previewSelectedEmployeeImage(){if(empImage.value){empPreview.src=empImage.value;empPreview.style.display='block';updateEmployeePreview()}}
-        let pendingEmployeeFile=null;function previewEmployeeUpload(e){let f=e.target.files[0];if(!f)return;pendingEmployeeFile=f;empPreview.src=URL.createObjectURL(f);empPreview.style.display='block'}async function saveEmployee(){try{if(pendingEmployeeFile){const uploadedUrl=await uploadFileToFirebase(pendingEmployeeFile,'employees');empImage.innerHTML+=`<option selected value="${uploadedUrl}">Firebase image</option>`;pendingEmployeeFile=null;}let a=xget('arfianka_employees_plus',[]),id=+empId.value,o={id:id||Date.now(),name:empName.value,role:empRole.value,phone:empPhone.value,email:empEmail.value,image:empImage.value,height:+empHeight.value,x:+empX.value,y:+empY.value,fit:empFit.value,visible:empVisible.checked},i=a.findIndex(x=>x.id===id);if(!o.name)return alert('Name required');i>=0?a[i]=o:a.push(o);xset('arfianka_employees_plus',a);clearEmployee()}catch(error){console.error(error);alert('Employee save failed / Čuvanje zaposlenog nije uspelo: '+(error.message||error));}}function editEmployee(id){let x=xget('arfianka_employees_plus',[]).find(v=>v.id===id);empId.value=x.id;empName.value=x.name;empRole.value=x.role;empPhone.value=x.phone;empEmail.value=x.email;empImage.innerHTML+=`<option selected value="${x.image}">Current image</option>`;empHeight.value=x.height;empX.value=x.x;empY.value=x.y;empFit.value=x.fit;empVisible.checked=x.visible;empPreview.src=x.image;empPreview.style.display=x.image?'block':'none';updateEmployeePreview()}function clearEmployee(){empId.value=empName.value=empRole.value=empPhone.value=empEmail.value='';empPreview.style.display='none'}
+        let pendingEmployeeFile=null;function previewEmployeeUpload(e){let f=e.target.files[0];if(!f)return;pendingEmployeeFile=f;empPreview.src=URL.createObjectURL(f);empPreview.style.display='block'}async function saveEmployee(){try{if(pendingEmployeeFile){const u=await uploadFileToFirebase(pendingEmployeeFile,'employees');empImage.innerHTML+=`<option selected value="${u}">Firebase image</option>`;pendingEmployeeFile=null;}let a=xget('arfianka_employees_plus',[]),id=+empId.value,o={id:id||Date.now(),name:empName.value,role:empRole.value,phone:empPhone.value,email:empEmail.value,image:empImage.value,height:+empHeight.value,x:+empX.value,y:+empY.value,fit:empFit.value,visible:empVisible.checked},i=a.findIndex(x=>x.id===id);if(!o.name)return alert('Name required');i>=0?a[i]=o:a.push(o);xset('arfianka_employees_plus',a);clearEmployee()}catch(error){console.error(error);alert('Firebase save failed: '+(error.code||error.message||error));}}function editEmployee(id){let x=xget('arfianka_employees_plus',[]).find(v=>v.id===id);empId.value=x.id;empName.value=x.name;empRole.value=x.role;empPhone.value=x.phone;empEmail.value=x.email;empImage.innerHTML+=`<option selected value="${x.image}">Current image</option>`;empHeight.value=x.height;empX.value=x.x;empY.value=x.y;empFit.value=x.fit;empVisible.checked=x.visible;empPreview.src=x.image;empPreview.style.display=x.image?'block':'none';updateEmployeePreview()}function clearEmployee(){empId.value=empName.value=empRole.value=empPhone.value=empEmail.value='';empPreview.style.display='none'}
         function saveModule(){let a=xget('arfianka_modules_plus',[]),id=+modId.value,o={id:id||Date.now(),title:modTitle.value,text:modText.value,link:modLink.value,image:modImage.value,visible:modVisible.checked},i=a.findIndex(x=>x.id===id);i>=0?a[i]=o:a.push(o);xset('arfianka_modules_plus',a);clearModule()}function editModuleX(id){let x=xget('arfianka_modules_plus',[]).find(v=>v.id===id);modId.value=x.id;modTitle.value=x.title;modText.value=x.text;modLink.value=x.link;modImage.value=x.image;modVisible.checked=x.visible}function clearModule(){modId.value=modTitle.value=modText.value=modLink.value=''}
         async function uploadLibraryImages(){
-            const files=[...imageUpload.files];
-            if(!files.length)return;
-            try{
-                const uploaded=[];
-                for(const file of files){
-                    const url=await uploadFileToFirebase(file,'library');
-                    uploaded.push({id:Date.now()+'-'+Math.random(),name:file.name,src:url});
-                }
-                lib.push(...uploaded);
-                xset('arfianka_library',lib);
-                imageUpload.value='';
-                alert('Images saved in Firebase Storage. / Slike su sačuvane u Firebase Storage.');
-            }catch(error){console.error(error);alert('Upload failed / Otpremanje nije uspelo: '+(error.message||error));}
-        }
-        function assignLib(id,t){layout[t]=id;xset('arfianka_layout_plus',layout)}function renameLib(id,n){let x=lib.find(v=>v.id===id);if(x)x.name=n;xset('arfianka_library',lib)}function deleteLib(id){if([layout.logo,layout.profile,layout.hero].includes(id))return alert('Assign another image first');lib=lib.filter(x=>x.id!==id);xset('arfianka_library',lib)}function saveLayoutControls(){layout={...layout,logoHeight:+logoHeight.value,heroHeight:+heroHeight.value,heroZoom:+heroZoom.value,heroX:+heroX.value,heroY:+heroY.value,profileHeight:+profileHeight.value,profileX:+profileX.value,profileY:+profileY.value,profileFit:profileFit.value};xset('arfianka_layout_plus',layout)}function resetLayoutControls(){layout={logo:'default-logo',profile:'default-profile',hero:'',logoHeight:76,heroHeight:700,heroZoom:100,heroX:50,heroY:50,profileHeight:450,profileX:50,profileY:20,profileFit:'cover'};xset('arfianka_layout_plus',layout)}
+          if(!auth.currentUser)return alert('Please log in as administrator first.');
+          try{
+            const added=[];
+            for(const file of [...imageUpload.files]){
+              const url=await uploadFileToFirebase(file,'library');
+              added.push({id:Date.now()+'-'+Math.random(),name:file.name,src:url});
+            }
+            lib.push(...added); xset('arfianka_library',lib); imageUpload.value='';
+            alert('Images saved in Firebase Storage.');
+          }catch(error){console.error(error);alert('Firebase Storage failed: '+(error.code||error.message||error));}
+        }function assignLib(id,t){layout[t]=id;xset('arfianka_layout_plus',layout)}function renameLib(id,n){let x=lib.find(v=>v.id===id);if(x)x.name=n;xset('arfianka_library',lib)}function deleteLib(id){if([layout.logo,layout.profile,layout.hero].includes(id))return alert('Assign another image first');lib=lib.filter(x=>x.id!==id);xset('arfianka_library',lib)}function saveLayoutControls(){layout={...layout,logoHeight:+logoHeight.value,heroHeight:+heroHeight.value,heroZoom:+heroZoom.value,heroX:+heroX.value,heroY:+heroY.value,profileHeight:+profileHeight.value,profileX:+profileX.value,profileY:+profileY.value,profileFit:profileFit.value};xset('arfianka_layout_plus',layout)}function resetLayoutControls(){layout={logo:'default-logo',profile:'default-profile',hero:'',logoHeight:76,heroHeight:700,heroZoom:100,heroX:50,heroY:50,profileHeight:450,profileX:50,profileY:20,profileFit:'cover'};xset('arfianka_layout_plus',layout)}
         function renderExtendedCms(){const dynamicServices=document.getElementById('dynamic-services');lib=xget('arfianka_library',lib);layout=xget('arfianka_layout_plus',layout);let sv=xget('arfianka_linked_services',defaultServices),visible=sv.filter(x=>x.visible);if(dynamicServices) if(dynamicServices) dynamicServices.innerHTML=visible.map(x=>`<article class="service-card" role="button" tabindex="0" onclick="bookService('${xe(x.title).replace(/'/g,"\\'")}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();bookService('${xe(x.title).replace(/'/g,"\\'")}')}">${x.image?`<img src="${xe(x.image)}" style="width:100%;height:180px;object-fit:cover;border-radius:8px">`:''}<h3>${xe(x.title)}</h3><p>${xe(x.description)}</p><p style="color:var(--primary-gold);font-weight:bold">${xe(x.price)}</p><button type="button" class="btn-solid service-book-btn" onclick="event.stopPropagation();bookService('${xe(x.title).replace(/'/g,"\\'")}')">Book / Zakaži</button></article>`).join('');service.innerHTML='<option value="">Izaberite...</option>'+visible.map(x=>`<option value="${xe(x.title)}">${xe(x.title)}${x.price?' - '+xe(x.price):''}</option>`).join('');if(document.getElementById('svcManager'))svcManager.innerHTML=sv.map(x=>`<div class="cms-row"><span><b>${xe(x.title)}</b><br>${xe(x.description)} (${x.visible?'Visible':'Hidden'})</span><span class="cms-actions"><button class="btn-small" onclick="editLinkedService(${x.id})">Edit</button><button class="btn-small" onclick="toggleX('arfianka_linked_services',${x.id})">Show/Hide</button><button class="btn-small" onclick="moveX('arfianka_linked_services',${x.id},-1)">Up</button><button class="btn-small" onclick="moveX('arfianka_linked_services',${x.id},1)">Down</button><button class="btn-small btn-danger" onclick="deleteX('arfianka_linked_services',${x.id})">Delete</button></span></div>`).join('');
         let c=xget('arfianka_contact_plus',{phone:'',email:'',address:'',visible:false});contactPublicSection=document.getElementById('contact-public-section');contactPublicSection.style.display=c.visible?'block':'none';document.getElementById('contact-public').innerHTML=`<a href="tel:${xe(c.phone)}">☎ ${xe(c.phone)}</a><a href="mailto:${xe(c.email)}">✉ ${xe(c.email)}</a><div>${xe(c.address)}</div>`;if(document.getElementById('contactPhone')){contactPhone.value=c.phone;contactEmail.value=c.email;contactAddress.value=c.address;contactVisible.checked=c.visible}
         let es=xget('arfianka_employees_plus',[]);document.getElementById('employees-public-section').style.display=es.some(x=>x.visible)?'block':'none';document.getElementById('employees-public').innerHTML=es.filter(x=>x.visible).map(x=>`<article class="feature-card"><img src="${xe(x.image)}" style="height:${x.height}px;object-fit:${x.fit};object-position:${x.x}% ${x.y}%"><h3>${xe(x.name)}</h3><p>${xe(x.role)}</p><a href="tel:${xe(x.phone)}">${xe(x.phone)}</a><br><a href="mailto:${xe(x.email)}">${xe(x.email)}</a></article>`).join('');if(document.getElementById('empManager'))empManager.innerHTML=es.map(x=>`<div class="cms-row"><span>${xe(x.name)} (${x.visible?'Visible':'Hidden'})</span><span><button class="btn-small" onclick="editEmployee(${x.id})">Edit</button><button class="btn-small" onclick="toggleX('arfianka_employees_plus',${x.id})">Show/Hide</button><button class="btn-small btn-danger" onclick="deleteX('arfianka_employees_plus',${x.id})">Delete</button></span></div>`).join('');
         let ms=xget('arfianka_modules_plus',[]);document.getElementById('modules-public-section').style.display=ms.some(x=>x.visible)?'block':'none';document.getElementById('modules-public').innerHTML=ms.filter(x=>x.visible).map(x=>`<article class="feature-card">${x.image?`<img src="${xe(x.image)}">`:''}<h3>${xe(x.title)}</h3><p>${xe(x.text)}</p>${x.link?`<a href="${xe(x.link)}" target="_blank">Read more</a>`:''}</article>`).join('');if(document.getElementById('modManager'))modManager.innerHTML=ms.map(x=>`<div class="cms-row"><span>${xe(x.title)} (${x.visible?'Visible':'Hidden'})</span><span><button class="btn-small" onclick="editModuleX(${x.id})">Edit</button><button class="btn-small" onclick="toggleX('arfianka_modules_plus',${x.id})">Show/Hide</button><button class="btn-small btn-danger" onclick="deleteX('arfianka_modules_plus',${x.id})">Delete</button></span></div>`).join('');
         let opts='<option value="">No image</option>'+lib.map(x=>`<option value="${xe(x.src)}">${xe(x.name)}</option>`).join('');if(document.getElementById('svcImage')){svcImage.innerHTML=opts;empImage.innerHTML=opts;modImage.innerHTML=opts;imageLibrary.innerHTML=lib.map(x=>`<div class="image-box"><img src="${xe(x.src)}"><input value="${xe(x.name)}" onchange="renameLib('${x.id}',this.value)"><div class="cms-actions"><button class="btn-small" onclick="assignLib('${x.id}','logo')">Logo</button><button class="btn-small" onclick="assignLib('${x.id}','hero')">Hero</button><button class="btn-small" onclick="assignLib('${x.id}','profile')">Profile</button><button class="btn-small btn-danger" onclick="deleteLib('${x.id}')">Delete</button></div></div>`).join('')}
         let logo=document.getElementById('site-logo'),profile=document.getElementById('site-profile-pic'),hero=document.getElementById('forside');logo.src=libSrc(layout.logo)||logo.src;logo.style.height=layout.logoHeight+'px';profile.style.backgroundImage=`url("${libSrc(layout.profile)||'Kri.jpg'}")`;profile.style.minHeight=layout.profileHeight+'px';profile.style.backgroundPosition=`${layout.profileX}% ${layout.profileY}%`;profile.style.backgroundSize=layout.profileFit;hero.style.height=layout.heroHeight+'px';if(libSrc(layout.hero))hero.style.background=`linear-gradient(rgba(13,44,84,.75),rgba(13,44,84,.75)),url("${libSrc(layout.hero)}") ${layout.heroX}% ${layout.heroY}%/${layout.heroZoom}% no-repeat`;if(document.getElementById('logoHeight')){for(let [id,v,u] of [['logoHeight',layout.logoHeight,'px'],['heroHeight',layout.heroHeight,'px'],['heroZoom',layout.heroZoom,'%'],['heroX',layout.heroX,'%'],['heroY',layout.heroY,'%'],['profileHeight',layout.profileHeight,'px'],['profileX',layout.profileX,'%'],['profileY',layout.profileY,'%']]){document.getElementById(id).value=v;document.getElementById(id+'Out').value=v+u}profileFit.value=layout.profileFit}}
-        document.addEventListener('DOMContentLoaded',async function(){await firebaseCmsReady;renderExtendedCms();});
+        document.addEventListener('DOMContentLoaded',async()=>{await firebaseCmsReady;renderExtendedCms();});
 
         function loadEmailConfiguration(){const c=getEmailConfig();const set=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||""};set("emailServiceId",c.serviceId);set("emailPublicKey",c.publicKey);set("emailNotificationTemplateId",c.notificationTemplateId);set("emailAutoReplyTemplateId",c.autoReplyTemplateId);set("emailToAddress",c.toEmail);const test=document.getElementById("emailTestRecipient");if(test&&!test.value)test.value=c.toEmail;const enabled=document.getElementById("emailAutoReplyEnabled");if(enabled)enabled.checked=!!c.sendAutoReply;}
-        function saveEmailConfiguration(){const c={serviceId:emailServiceId.value.trim(),publicKey:emailPublicKey.value.trim(),notificationTemplateId:emailNotificationTemplateId.value.trim(),autoReplyTemplateId:emailAutoReplyTemplateId.value.trim(),toEmail:emailToAddress.value.trim(),sendAutoReply:emailAutoReplyEnabled.checked};localStorage.setItem("arfianka_email_config",JSON.stringify(c));initEmailJS();emailTestStatus.textContent="Email settings saved in this browser.";emailTestStatus.style.background="#d4edda";}
+        function saveEmailConfiguration(){const c={serviceId:emailServiceId.value.trim(),publicKey:emailPublicKey.value.trim(),notificationTemplateId:emailNotificationTemplateId.value.trim(),autoReplyTemplateId:emailAutoReplyTemplateId.value.trim(),toEmail:emailToAddress.value.trim(),sendAutoReply:emailAutoReplyEnabled.checked};cmsSetItem("arfianka_email_config",JSON.stringify(c));initEmailJS();emailTestStatus.textContent="Email settings saved in this browser.";emailTestStatus.style.background="#d4edda";}
         function emailTestParams(to){return {to_email:to,to_name:"ArFiAnKA test",from_name:"ArFiAnKA",from_email:getEmailConfig().toEmail,navn:"ArFiAnKA test",telefon:"-",email:to,customer_email:to,reply_to:getEmailConfig().toEmail,tjeneste:"EmailJS test",besked:"Test sent from the ArFiAnKA admin panel",message:"Test sent from the ArFiAnKA admin panel",dato:new Date().toLocaleString("da-DK")}}
         async function runEmailTest(templateId,to,label){const c=getEmailConfig();emailTestStatus.textContent="Testing "+label+"...";emailTestStatus.style.background="#fff3cd";try{initEmailJS();const response=await emailjs.send(c.serviceId,templateId,emailTestParams(to),{publicKey:c.publicKey});emailTestStatus.textContent=label+" sent successfully. Status: "+response.status;emailTestStatus.style.background="#d4edda"}catch(error){console.error(label+" failed",error);emailTestStatus.textContent=label+" failed: "+((error&&(error.text||error.message))||String(error));emailTestStatus.style.background="#f8d7da"}}
         async function testAdminNotification(){saveEmailConfiguration();const c=getEmailConfig();await runEmailTest(c.notificationTemplateId,c.toEmail,"Admin notification")}
         async function testCustomerAutoReply(){saveEmailConfiguration();const c=getEmailConfig(),to=emailTestRecipient.value.trim();if(!to)return alert("Enter a test customer email");await runEmailTest(c.autoReplyTemplateId,to,"Customer Auto-Reply")}
-        document.addEventListener("DOMContentLoaded",async function(){await firebaseCmsReady;loadEmailConfiguration();});
+        document.addEventListener("DOMContentLoaded",async()=>{await firebaseCmsReady;loadEmailConfiguration();});
 
         // Restore the authenticated role after refresh and reject users without a valid role.
         auth.onAuthStateChanged(async function(user) {
