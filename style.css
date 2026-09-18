@@ -3,7 +3,6 @@
    Optimeret til Desktop, Tablet & Mobil
    ========================================================================== */
 
-/* --- VARIABLER & GRUNDINDSTILLINGER --- */
 :root {
     --primary-navy: #0d2c54;
     --primary-gold: #c39a5c;
@@ -274,7 +273,6 @@ img {
     margin-bottom: 25px;
 }
 
-/* DET NYE SMUKKE DESIGN NÅR BILLEDET ER FJERNET */
 .about-container.no-image .about-content {
     align-items: center;
     text-align: center;
@@ -669,7 +667,7 @@ tr:hover {
 .services-empty { text-align: center; padding: 30px; color: #64748b; font-style: italic; }
 .services-tip { font-size: 13px; color: #64748b; margin: 12px 5px 0; }
 
-/* --- PROFESSIONEL IMAGE LIBRARY --- */
+/* --- PROFESSIONEL IMAGE LIBRARY (Desktop & Mobil) --- */
 .image-library {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
