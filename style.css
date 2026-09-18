@@ -239,6 +239,7 @@ img {
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(13,44,84,0.08);
     align-items: stretch; 
+    transition: all 0.3s ease;
 }
 
 .about-image {
@@ -254,12 +255,14 @@ img {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    box-sizing: border-box;
 }
 
 .about-content h2 {
     font-size: clamp(1.6rem, 3vw, 2.2rem);
     color: var(--primary-navy);
     margin-bottom: 8px;
+    transition: all 0.3s ease;
 }
 
 .title-gold {
@@ -269,6 +272,30 @@ img {
     font-size: 0.85rem;
     letter-spacing: 1px;
     margin-bottom: 25px;
+}
+
+/* DET NYE SMUKKE DESIGN NÅR BILLEDET ER FJERNET */
+.about-container.no-image .about-content {
+    align-items: center;
+    text-align: center;
+    padding: 70px 10%;
+    background-color: white;
+}
+
+.about-container.no-image .about-content h2 {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+}
+
+.about-container.no-image .title-gold {
+    font-size: 1rem;
+    margin-bottom: 35px;
+}
+
+.about-container.no-image .about-content p {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 1.05rem;
 }
 
 /* --- BOOKING FORM --- */
@@ -642,7 +669,7 @@ tr:hover {
 .services-empty { text-align: center; padding: 30px; color: #64748b; font-style: italic; }
 .services-tip { font-size: 13px; color: #64748b; margin: 12px 5px 0; }
 
-/* --- PROFESSIONEL IMAGE LIBRARY (Desktop & Mobil) --- */
+/* --- PROFESSIONEL IMAGE LIBRARY --- */
 .image-library {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
