@@ -150,7 +150,6 @@
                 <button id="tab-btn-employees" onclick="switchAdminTab('employees')">👥 Logins / Nalozi</button>
             </div>
             
-            <!-- Tab: BOOKINGS -->
             <div id="admin-view-bookings">
                 <div class="admin-header-flex">
                     <h2>Bookings Overview / Pregled rezervacija</h2>
@@ -188,12 +187,11 @@
                 </div>
             </div>
             
-            <!-- Tab: EDIT WEBSITE -->
             <div id="admin-view-settings" style="display:none;">
                 <div class="admin-card"><h3 style="color:var(--primary-navy);margin-top:0">Email notifications / Email obaveštenja</h3><p style="font-size:14px">Manage EmailJS settings and test both the admin notification and customer auto-reply. Passwords and private keys must not be entered here.</p><div class="cms-grid"><div><label>Service ID</label><input id="emailServiceId" class="form-control"></div><div><label>Public Key</label><input id="emailPublicKey" class="form-control"></div><div><label>Admin notification Template ID</label><input id="emailNotificationTemplateId" class="form-control"></div><div><label>Auto-Reply Template ID</label><input id="emailAutoReplyTemplateId" class="form-control"></div><div><label>Notification recipient</label><input id="emailToAddress" type="email" class="form-control"></div><div><label>Test customer email</label><input id="emailTestRecipient" type="email" class="form-control" placeholder="customer@example.com"></div></div><label style="display:block;margin:14px 0"><input id="emailAutoReplyEnabled" type="checkbox"> Send Auto-Reply to customer after booking</label><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn-solid" onclick="saveEmailConfiguration()">Save email settings</button><button class="btn-solid btn-edit" onclick="testAdminNotification()">Test admin email</button><button class="btn-solid btn-muted" onclick="testCustomerAutoReply()">Test Auto-Reply</button></div><div id="emailTestStatus" style="margin-top:14px;padding:12px;border-radius:7px;background:#f6f6f6">Not tested yet.</div></div>
                 <div class="admin-header-flex">
                     <h2>Website Settings / Podešavanja sajta</h2>
-                    <p>Change images, dropdown categories, and text directly from here.</p>
+                    <p>Change images, dropdown categories, and text directly from here. / Menjajte padajuće menije og tekst direkte herfra.</p>
                 </div>
                 
                 <div class="admin-card">
@@ -247,7 +245,6 @@
                 </div>
             </div>
 
-            <!-- Tab: EMPLOYEES LOGINS -->
             <div id="admin-view-employees" style="display:none;">
                 <div class="admin-header-flex"><div><h2>Employee logins / Nalozi zaposlenih</h2><p>Create booking-only access. / Kreirajte pristup samo rezervacijama.</p></div></div>
                 <div class="employee-manager-grid">
@@ -265,62 +262,9 @@
                 </div>
             </div>
 
-            <!-- Tab: SERVICES LIST -->
-            <div id="admin-view-services" style="display:none">
-                <div class="admin-card">
-                    <h3>Services shown on site and booking dropdown</h3>
-                    <div class="cms-grid">
-                        <input id="svcTitle" class="form-control" placeholder="Title">
-                        <textarea id="svcDesc" class="form-control" placeholder="Description"></textarea>
-                        <input id="svcPrice" class="form-control" placeholder="Price">
-                        <select id="svcImage" class="form-control" onchange="svcImagePreview.src=this.value;svcImagePreview.style.display=this.value?'block':'none'"></select>
-                        <img id="svcImagePreview" class="image-preview">
-                    </div>
-                    <label><input id="svcVisible" type="checkbox" checked> Visible and bookable</label><input id="svcId" type="hidden"><br><br>
-                    <button class="btn-solid" onclick="saveLinkedService()">Save service</button>
-                    <button class="btn-solid btn-muted" onclick="clearLinkedService()">Clear</button>
-                    <div id="svcManager"></div>
-                </div>
-            </div>
+            <div id="admin-view-services" style="display:none"><div class="admin-card"><h3>Services shown on site and booking dropdown</h3><div class="cms-grid"><input id="svcTitle" class="form-control" placeholder="Title"><textarea id="svcDesc" class="form-control" placeholder="Description"></textarea><input id="svcPrice" class="form-control" placeholder="Price"><select id="svcImage" class="form-control" onchange="svcImagePreview.src=this.value;svcImagePreview.style.display=this.value?'block':'none'"></select><img id="svcImagePreview" class="image-preview"></div><label><input id="svcVisible" type="checkbox" checked> Visible and bookable</label><input id="svcId" type="hidden"><br><br><button class="btn-solid" onclick="saveLinkedService()">Save service</button><button class="btn-solid btn-muted" onclick="clearLinkedService()">Clear</button><div id="svcManager"></div></div></div>
+            <div id="admin-view-content" style="display:none"><div class="admin-card"><h3>Contact information</h3><div class="cms-grid"><input id="contactPhone" class="form-control" placeholder="Phone"><input id="contactEmail" class="form-control" placeholder="Email"><input id="contactAddress" class="form-control" placeholder="Address"></div><label><input id="contactVisible" type="checkbox" checked> Visible</label><br><br><button class="btn-solid" onclick="saveContactInfo()">Save contact</button></div><div class="admin-card"><h3>Employees (Medarbejdere)</h3><p style="font-size:14px; color:#64748b;">Upload billedet i Billedarkivet først under "Medarbejdere", og vælg det herefter i dropdown-menuen.</p><div class="cms-grid"><input id="empName" class="form-control" placeholder="Name"><input id="empRole" class="form-control" placeholder="Role"><input id="empPhone" class="form-control" placeholder="Phone"><input id="empEmail" class="form-control" placeholder="Email"><select id="empImage" class="form-control" onchange="previewSelectedEmployeeImage()"></select></div><img id="empPreview" class="image-preview"><div class="range-row"><label>Photo height</label><input id="empHeight" type="range" min="150" max="420" value="200" oninput="updateEmployeePreview()"><output id="empHeightOut">200px</output></div><div class="range-row"><label>Horizontal focus</label><input id="empX" type="range" min="0" max="100" value="50" oninput="updateEmployeePreview()"><output id="empXOut">50%</output></div><div class="range-row"><label>Vertical focus</label><input id="empY" type="range" min="0" max="100" value="30" oninput="updateEmployeePreview()"><output id="empYOut">30%</output></div><select id="empFit" class="form-control" onchange="updateEmployeePreview()"><option value="cover">Fill card</option><option value="contain">Show whole picture</option></select><label><input id="empVisible" type="checkbox" checked> Visible</label><input id="empId" type="hidden"><br><br><button class="btn-solid" onclick="saveEmployee()">Save employee</button><button class="btn-solid btn-muted" onclick="clearEmployee()">Clear</button><button class="btn-solid btn-danger" onclick="document.getElementById('empImage').value=''; document.getElementById('empPreview').style.display='none'">Remove photo</button><div id="empManager"></div></div><div class="admin-card"><h3>Custom modules</h3><div class="cms-grid"><input id="modTitle" class="form-control" placeholder="Title"><textarea id="modText" class="form-control" placeholder="Content"></textarea><input id="modLink" class="form-control" placeholder="Link"><select id="modImage" class="form-control"></select></div><label><input id="modVisible" type="checkbox" checked> Visible</label><input id="modId" type="hidden"><br><br><button class="btn-solid" onclick="saveModule()">Save module</button><button class="btn-solid btn-muted" onclick="clearModule()">Clear</button><div id="modManager"></div></div></div>
             
-            <!-- Tab: CONTENT -->
-            <div id="admin-view-content" style="display:none">
-                <div class="admin-card">
-                    <h3>Contact information</h3>
-                    <div class="cms-grid"><input id="contactPhone" class="form-control" placeholder="Phone"><input id="contactEmail" class="form-control" placeholder="Email"><input id="contactAddress" class="form-control" placeholder="Address"></div><label><input id="contactVisible" type="checkbox" checked> Visible</label><br><br><button class="btn-solid" onclick="saveContactInfo()">Save contact</button>
-                </div>
-                
-                <div class="admin-card">
-                    <h3>Employees (Medarbejdere)</h3>
-                    <p style="font-size:14px; color:#64748b;">Upload billedet i Billedarkivet først under "Medarbejdere", og vælg det herefter i dropdown-menuen.</p>
-                    <div class="cms-grid">
-                        <input id="empName" class="form-control" placeholder="Name">
-                        <input id="empRole" class="form-control" placeholder="Role">
-                        <input id="empPhone" class="form-control" placeholder="Phone">
-                        <input id="empEmail" class="form-control" placeholder="Email">
-                        
-                        <!-- Dropdown menu der fremover kun viser Medarbejder-billeder -->
-                        <select id="empImage" class="form-control" onchange="previewSelectedEmployeeImage()"></select>
-                    </div>
-                    <img id="empPreview" class="image-preview">
-                    <div class="range-row"><label>Photo height</label><input id="empHeight" type="range" min="150" max="420" value="200" oninput="updateEmployeePreview()"><output id="empHeightOut">200px</output></div>
-                    <div class="range-row"><label>Horizontal focus</label><input id="empX" type="range" min="0" max="100" value="50" oninput="updateEmployeePreview()"><output id="empXOut">50%</output></div>
-                    <div class="range-row"><label>Vertical focus</label><input id="empY" type="range" min="0" max="100" value="30" oninput="updateEmployeePreview()"><output id="empYOut">30%</output></div>
-                    <select id="empFit" class="form-control" onchange="updateEmployeePreview()"><option value="cover">Fill card</option><option value="contain">Show whole picture</option></select>
-                    <label><input id="empVisible" type="checkbox" checked> Visible</label><input id="empId" type="hidden"><br><br>
-                    <button class="btn-solid" onclick="saveEmployee()">Save employee</button>
-                    <button class="btn-solid btn-muted" onclick="clearEmployee()">Clear</button>
-                    <button class="btn-solid btn-danger" onclick="document.getElementById('empImage').value=''; document.getElementById('empPreview').style.display='none'">Remove photo</button>
-                    <div id="empManager"></div>
-                </div>
-                
-                <div class="admin-card">
-                    <h3>Custom modules</h3>
-                    <div class="cms-grid"><input id="modTitle" class="form-control" placeholder="Title"><textarea id="modText" class="form-control" placeholder="Content"></textarea><input id="modLink" class="form-control" placeholder="Link"><select id="modImage" class="form-control"></select></div><label><input id="modVisible" type="checkbox" checked> Visible</label><input id="modId" type="hidden"><br><br><button class="btn-solid" onclick="saveModule()">Save module</button><button class="btn-solid btn-muted" onclick="clearModule()">Clear</button><div id="modManager"></div>
-                </div>
-            </div>
-            
-            <!-- Tab: IMAGES (New Categorized Hub) -->
             <div id="admin-view-images" style="display:none;">
                 <div class="admin-header-flex">
                     <h2>Billedarkiv & Design</h2>
@@ -330,7 +274,6 @@
                 <div class="admin-card">
                     <h3 style="color:var(--primary-navy); margin-top:0;">1. Tilføj nye billeder</h3>
                     <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
-                        <!-- NYT KATEGORI-VALG -->
                         <select id="uploadCategory" class="form-control" style="flex:0.5; min-width:180px;">
                             <option value="site">Sitet (Logo, Baggrund, Om os)</option>
                             <option value="employee">Medarbejdere</option>
@@ -390,7 +333,10 @@
         </div>
     </div>
 
-    <!-- Linker til JavaScript logikken -->
+    <!-- Her læses dine filer ind oppefra og ned -->
+    <script src="config.js"></script>
+    <script src="lang.js"></script>
     <script src="app.js"></script>
+
 </body>
 </html>
