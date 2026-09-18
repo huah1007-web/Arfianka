@@ -574,42 +574,131 @@ async function markAsDone(id) {
 
 const xget=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}},xset=(k,v)=>{cmsSetItem(k,JSON.stringify(v)).then(()=>console.info('Saved in Firebase:',k)).catch(e=>{console.error(e);alert('Firebase save failed: '+(e.code||e.message||e))});renderExtendedCms()},xe=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const defaultServices=[{id:1,title:'Onlajn sastanak za sigurnost',description:'Razgovor preko računara/tableta o zdravlju, blagostanju ili praktičnim izazovima.',price:'',image:'',visible:true},{id:2,title:'Praktična i lična nega',description:'Pomoć pri kupovini, kuvanju i ličnoj higijeni sa poštovanjem i dostojanstvom.',price:'',image:'',visible:true},{id:3,title:'Zdravstveno savetovanje',description:'Ovlašćena procena, upravljanje lekovima i dijalog sa opštinom/lekarom.',price:'',image:'',visible:true}];
-let lib=xget('arfianka_library',[{id:'default-logo',name:'Current logo',src:'a3b1c038-c74c-49f8-801e-e018737ac673.jpg'},{id:'default-profile',name:'Current profile',src:'Kri.jpg'}]),layout=xget('arfianka_layout_plus',{logo:'default-logo',profile:'default-profile',hero:'',logoHeight:76,heroHeight:700,heroZoom:100,heroX:50,heroY:50,profileHeight:450,profileX:50,profileY:20,profileFit:'cover'});const libSrc=id=>lib.find(x=>x.id===id)?.src||'';
 
-function saveLinkedService(){let a=xget('arfianka_linked_services',defaultServices),id=+svcId.value,o={id:id||Date.now(),title:svcTitle.value.trim(),description:svcDesc.value.trim(),price:svcPrice.value.trim(),image:svcImage.value,visible:svcVisible.checked},i=a.findIndex(x=>x.id===id);if(!o.title)return alert('Title required');i>=0?a[i]=o:a.push(o);xset('arfianka_linked_services',a);clearLinkedService()}
-function editLinkedService(id){let x=xget('arfianka_linked_services',defaultServices).find(v=>v.id===id);if(!x)return;svcId.value=x.id;svcTitle.value=x.title;svcDesc.value=x.description;svcPrice.value=x.price;svcImage.value=x.image;svcVisible.checked=x.visible}
-function clearLinkedService(){svcId.value=svcTitle.value=svcDesc.value=svcPrice.value=''}
+let lib=xget('arfianka_library',[{id:'default-logo',name:'Current logo',src:'a3b1c038-c74c-49f8-801e-e018737ac673.jpg',category:'site'},{id:'default-profile',name:'Current profile',src:'Kri.jpg',category:'site'}]);
+let layout=xget('arfianka_layout_plus',{logo:'default-logo',profile:'default-profile',hero:'',logoHeight:76,heroHeight:700,heroZoom:100,heroX:50,heroY:50,profileHeight:450,profileX:50,profileY:20,profileFit:'cover'});
+const libSrc=id=>lib.find(x=>x.id===id)?.src||'';
+
+function saveLinkedService(){let a=xget('arfianka_linked_services',defaultServices),id=+document.getElementById('svcId').value,o={id:id||Date.now(),title:document.getElementById('svcTitle').value.trim(),description:document.getElementById('svcDesc').value.trim(),price:document.getElementById('svcPrice').value.trim(),image:document.getElementById('svcImage').value,visible:document.getElementById('svcVisible').checked},i=a.findIndex(x=>x.id===id);if(!o.title)return alert('Title required');i>=0?a[i]=o:a.push(o);xset('arfianka_linked_services',a);clearLinkedService()}
+function editLinkedService(id){let x=xget('arfianka_linked_services',defaultServices).find(v=>v.id===id);if(!x)return;document.getElementById('svcId').value=x.id;document.getElementById('svcTitle').value=x.title;document.getElementById('svcDesc').value=x.description;document.getElementById('svcPrice').value=x.price;document.getElementById('svcImage').value=x.image;document.getElementById('svcVisible').checked=x.visible}
+function clearLinkedService(){document.getElementById('svcId').value=document.getElementById('svcTitle').value=document.getElementById('svcDesc').value=document.getElementById('svcPrice').value=''}
 function toggleX(k,id){let a=xget(k,[]),e=a.find(v=>v.id===id);if(e)e.visible=!e.visible;xset(k,a)}
 function deleteX(k,id){if(confirm('Delete?'))xset(k,xget(k,[]).filter(x=>x.id!==id))}
 function moveX(k,id,d){let a=xget(k,[]),i=a.findIndex(x=>x.id===id),j=i+d;if(i>=0&&j>=0&&j<a.length){[a[i],a[j]]=[a[j],a[i]];xset(k,a)}}
 function bookService(t){const s=document.getElementById('service'); if(s)s.value=t; const b=document.getElementById('book'); if(b)b.scrollIntoView({behavior:'smooth'})}
-function saveContactInfo(){xset('arfianka_contact_plus',{phone:contactPhone.value,email:contactEmail.value,address:contactAddress.value,visible:contactVisible.checked})}
-function updateEmployeePreview(){if(!document.getElementById('empPreview'))return;empHeightOut.value=empHeight.value+'px';empXOut.value=empX.value+'%';empYOut.value=empY.value+'%';empPreview.style.height=empHeight.value+'px';empPreview.style.width='220px';empPreview.style.objectFit=empFit.value;empPreview.style.objectPosition=empX.value+'% '+empY.value+'%';if(empImage.value){empPreview.src=empImage.value;empPreview.style.display='block'}}
-function previewSelectedEmployeeImage(){if(empImage.value){empPreview.src=empImage.value;empPreview.style.display='block';updateEmployeePreview()}}
-let pendingEmployeeFile=null;function previewEmployeeUpload(e){let f=e.target.files[0];if(!f)return;pendingEmployeeFile=f;empPreview.src=URL.createObjectURL(f);empPreview.style.display='block'}
-async function saveEmployee(){try{if(pendingEmployeeFile){const u=await uploadFileToFirebase(pendingEmployeeFile,'employees');empImage.innerHTML+=`<option selected value="${u}">Firebase image</option>`;pendingEmployeeFile=null;}let a=xget('arfianka_employees_plus',[]),id=+empId.value,o={id:id||Date.now(),name:empName.value,role:empRole.value,phone:empPhone.value,email:empEmail.value,image:empImage.value,height:+empHeight.value,x:+empX.value,y:+empY.value,fit:empFit.value,visible:empVisible.checked},i=a.findIndex(x=>x.id===id);if(!o.name)return alert('Name required');i>=0?a[i]=o:a.push(o);xset('arfianka_employees_plus',a);clearEmployee()}catch(error){console.error(error);alert('Firebase save failed: '+(error.code||error.message||error));}}
-function editEmployee(id){let x=xget('arfianka_employees_plus',[]).find(v=>v.id===id);if(!x)return;empId.value=x.id;empName.value=x.name;empRole.value=x.role;empPhone.value=x.phone;empEmail.value=x.email;empImage.innerHTML+=`<option selected value="${x.image}">Current image</option>`;empHeight.value=x.height;empX.value=x.x;empY.value=x.y;empFit.value=x.fit;empVisible.checked=x.visible;empPreview.src=x.image;empPreview.style.display=x.image?'block':'none';updateEmployeePreview()}
-function clearEmployee(){empId.value=empName.value=empRole.value=empPhone.value=empEmail.value='';empPreview.style.display='none'}
-function saveModule(){let a=xget('arfianka_modules_plus',[]),id=+modId.value,o={id:id||Date.now(),title:modTitle.value,text:modText.value,link:modLink.value,image:modImage.value,visible:modVisible.checked},i=a.findIndex(x=>x.id===id);i>=0?a[i]=o:a.push(o);xset('arfianka_modules_plus',a);clearModule()}
-function editModuleX(id){let x=xget('arfianka_modules_plus',[]).find(v=>v.id===id);if(!x)return;modId.value=x.id;modTitle.value=x.title;modText.value=x.text;modLink.value=x.link;modImage.value=x.image;modVisible.checked=x.visible}
-function clearModule(){modId.value=modTitle.value=modText.value=modLink.value=''}
+function saveContactInfo(){xset('arfianka_contact_plus',{phone:document.getElementById('contactPhone').value,email:document.getElementById('contactEmail').value,address:document.getElementById('contactAddress').value,visible:document.getElementById('contactVisible').checked})}
 
+// Opdaterede Employee funktioner (Direkte upload fjernet)
+function updateEmployeePreview(){
+    const empPreview = document.getElementById('empPreview');
+    const empHeight = document.getElementById('empHeight').value;
+    const empX = document.getElementById('empX').value;
+    const empY = document.getElementById('empY').value;
+    const empFit = document.getElementById('empFit').value;
+    const empImage = document.getElementById('empImage').value;
+    if(!empPreview)return;
+    document.getElementById('empHeightOut').value=empHeight+'px';
+    document.getElementById('empXOut').value=empX+'%';
+    document.getElementById('empYOut').value=empY+'%';
+    empPreview.style.height=empHeight+'px';
+    empPreview.style.width='220px';
+    empPreview.style.objectFit=empFit;
+    empPreview.style.objectPosition=empX+'% '+empY+'%';
+    if(empImage){
+        empPreview.src=empImage;
+        empPreview.style.display='block';
+    } else {
+        empPreview.style.display='none';
+    }
+}
+
+function previewSelectedEmployeeImage(){ updateEmployeePreview(); }
+
+async function saveEmployee(){
+    try{
+        let a=xget('arfianka_employees_plus',[]);
+        let id=+document.getElementById('empId').value;
+        let o={
+            id:id||Date.now(),
+            name:document.getElementById('empName').value,
+            role:document.getElementById('empRole').value,
+            phone:document.getElementById('empPhone').value,
+            email:document.getElementById('empEmail').value,
+            image:document.getElementById('empImage').value,
+            height:+document.getElementById('empHeight').value,
+            x:+document.getElementById('empX').value,
+            y:+document.getElementById('empY').value,
+            fit:document.getElementById('empFit').value,
+            visible:document.getElementById('empVisible').checked
+        };
+        let i=a.findIndex(x=>x.id===id);
+        if(!o.name)return alert('Name required');
+        i>=0 ? a[i]=o : a.push(o);
+        xset('arfianka_employees_plus',a);
+        clearEmployee();
+    }catch(error){
+        console.error(error);
+        alert('Firebase save failed: '+(error.code||error.message||error));
+    }
+}
+
+function editEmployee(id){
+    let x=xget('arfianka_employees_plus',[]).find(v=>v.id===id);
+    if(!x)return;
+    document.getElementById('empId').value=x.id;
+    document.getElementById('empName').value=x.name;
+    document.getElementById('empRole').value=x.role;
+    document.getElementById('empPhone').value=x.phone;
+    document.getElementById('empEmail').value=x.email;
+    document.getElementById('empImage').value=x.image;
+    document.getElementById('empHeight').value=x.height;
+    document.getElementById('empX').value=x.x;
+    document.getElementById('empY').value=x.y;
+    document.getElementById('empFit').value=x.fit;
+    document.getElementById('empVisible').checked=x.visible;
+    updateEmployeePreview();
+}
+
+function clearEmployee(){
+    document.getElementById('empId').value=document.getElementById('empName').value=document.getElementById('empRole').value=document.getElementById('empPhone').value=document.getElementById('empEmail').value='';
+    document.getElementById('empImage').value='';
+    document.getElementById('empPreview').style.display='none';
+}
+
+function saveModule(){let a=xget('arfianka_modules_plus',[]),id=+document.getElementById('modId').value,o={id:id||Date.now(),title:document.getElementById('modTitle').value,text:document.getElementById('modText').value,link:document.getElementById('modLink').value,image:document.getElementById('modImage').value,visible:document.getElementById('modVisible').checked},i=a.findIndex(x=>x.id===id);i>=0?a[i]=o:a.push(o);xset('arfianka_modules_plus',a);clearModule()}
+function editModuleX(id){let x=xget('arfianka_modules_plus',[]).find(v=>v.id===id);if(!x)return;document.getElementById('modId').value=x.id;document.getElementById('modTitle').value=x.title;document.getElementById('modText').value=x.text;document.getElementById('modLink').value=x.link;document.getElementById('modImage').value=x.image;document.getElementById('modVisible').checked=x.visible}
+function clearModule(){document.getElementById('modId').value=document.getElementById('modTitle').value=document.getElementById('modText').value=document.getElementById('modLink').value=''}
+
+// OPDATERET UPLOAD FUNKTION (Tilføjer Kategori)
 async function uploadLibraryImages(){
     if(!auth.currentUser)return alert('Please log in as administrator first.');
+    const cat = document.getElementById('uploadCategory').value;
+    const uploadFolder = cat === 'employee' ? 'employees' : 'library';
+    
     try{
         const added=[];
-        for(const file of [...imageUpload.files]){
-            const url=await uploadFileToFirebase(file,'library');
-            added.push({id:Date.now()+'-'+Math.random(),name:file.name,src:url});
+        const files = document.getElementById('imageUpload').files;
+        if(files.length === 0) return alert("Vælg et billede først.");
+        
+        for(const file of [...files]){
+            const url=await uploadFileToFirebase(file, uploadFolder);
+            added.push({id:Date.now()+'-'+Math.random(), name:file.name, src:url, category: cat});
         }
-        lib.push(...added); xset('arfianka_library',lib); imageUpload.value='';
+        lib.push(...added); 
+        xset('arfianka_library',lib); 
+        document.getElementById('imageUpload').value='';
         alert('Images saved in Firebase Storage.');
-    }catch(error){console.error(error);alert('Firebase Storage failed: '+(error.code||error.message||error));}
+    }catch(error){
+        console.error(error);
+        alert('Firebase Storage failed: '+(error.code||error.message||error));
+    }
 }
+
 function assignLib(id,t){layout[t]=id;xset('arfianka_layout_plus',layout)}
 function renameLib(id,n){let x=lib.find(v=>v.id===id);if(x)x.name=n;xset('arfianka_library',lib)}
 function deleteLib(id){if([layout.logo,layout.profile,layout.hero].includes(id))return alert('Assign another image first');lib=lib.filter(x=>x.id!==id);xset('arfianka_library',lib)}
-function saveLayoutControls(){layout={...layout,logoHeight:+logoHeight.value,heroHeight:+heroHeight.value,heroZoom:+heroZoom.value,heroX:+heroX.value,heroY:+heroY.value,profileHeight:+profileHeight.value,profileX:+profileX.value,profileY:+profileY.value,profileFit:profileFit.value};xset('arfianka_layout_plus',layout)}
+
+function saveLayoutControls(){layout={...layout,logoHeight:+document.getElementById('logoHeight').value,heroHeight:+document.getElementById('heroHeight').value,heroZoom:+document.getElementById('heroZoom').value,heroX:+document.getElementById('heroX').value,heroY:+document.getElementById('heroY').value,profileHeight:+document.getElementById('profileHeight').value,profileX:+document.getElementById('profileX').value,profileY:+document.getElementById('profileY').value,profileFit:document.getElementById('profileFit').value};xset('arfianka_layout_plus',layout)}
 function resetLayoutControls(){layout={logo:'default-logo',profile:'default-profile',hero:'',logoHeight:76,heroHeight:700,heroZoom:100,heroX:50,heroY:50,profileHeight:450,profileX:50,profileY:20,profileFit:'cover'};xset('arfianka_layout_plus',layout)}
 
 function renderExtendedCms(){
@@ -624,7 +713,10 @@ function renderExtendedCms(){
     
     const serviceDropdown=document.getElementById('service');
     if (serviceDropdown) {
-        serviceDropdown.innerHTML='<option value="">Izaberite...</option>'+visible.map(x=>`<option value="${xe(x.title)}">${xe(x.title)}${x.price?' - '+xe(x.price):''}</option>`).join('');
+        const langSel = document.getElementById('languageSelector');
+        const currentLang = langSel ? langSel.value : 'sr';
+        const selectPlaceholder = translations[currentLang] ? translations[currentLang]["form_opt_1"] : "Izaberite...";
+        serviceDropdown.innerHTML=`<option value="">${selectPlaceholder}</option>`+visible.map(x=>`<option value="${xe(x.title)}">${xe(x.title)}${x.price?' - '+xe(x.price):''}</option>`).join('');
     }
     
     const svcManager = document.getElementById('svcManager');
@@ -667,16 +759,49 @@ function renderExtendedCms(){
     if(modManagerEl) {
         modManagerEl.innerHTML=ms.map(x=>`<div class="cms-row"><span>${xe(x.title)} (${x.visible?'Visible':'Hidden'})</span><span><button class="btn-small" onclick="editModuleX(${x.id})">Edit</button><button class="btn-small" onclick="toggleX('arfianka_modules_plus',${x.id})">Show/Hide</button><button class="btn-small btn-danger" onclick="deleteX('arfianka_modules_plus',${x.id})">Delete</button></span></div>`).join('');
     }
+
+    // OPDATERING AF BILLED-BIBLIOTEK: Adskiller kategorier
+    const siteLib = lib.filter(x => !x.category || x.category === 'site');
+    const empLib = lib.filter(x => x.category === 'employee');
     
-    let opts='<option value="">No image</option>'+lib.map(x=>`<option value="${xe(x.src)}">${xe(x.name)}</option>`).join('');
-    const svcImageEl = document.getElementById('svcImage');
-    if(svcImageEl){
-        svcImageEl.innerHTML=opts;
-        document.getElementById('empImage').innerHTML=opts;
-        document.getElementById('modImage').innerHTML=opts;
-        document.getElementById('imageLibrary').innerHTML=lib.map(x=>`<div class="image-box"><img src="${xe(x.src)}"><input value="${xe(x.name)}" onchange="renameLib('${x.id}',this.value)"><div class="cms-actions"><button class="btn-small" onclick="assignLib('${x.id}','logo')">Logo</button><button class="btn-small" onclick="assignLib('${x.id}','hero')">Hero</button><button class="btn-small" onclick="assignLib('${x.id}','profile')">Profile</button><button class="btn-small btn-danger" onclick="deleteLib('${x.id}')">Delete</button></div></div>`).join('')
+    const imageLibrarySiteEl = document.getElementById('imageLibrarySite');
+    if(imageLibrarySiteEl) {
+        imageLibrarySiteEl.innerHTML = siteLib.map(x => `
+            <div class="image-box">
+                <img src="${xe(x.src)}">
+                <input value="${xe(x.name)}" onchange="renameLib('${x.id}',this.value)">
+                <div class="cms-actions">
+                    <button class="btn-small" onclick="assignLib('${x.id}','logo')">Logo</button>
+                    <button class="btn-small" onclick="assignLib('${x.id}','hero')">Hero</button>
+                    <button class="btn-small" onclick="assignLib('${x.id}','profile')">Profil</button>
+                    <button class="btn-small btn-danger" onclick="deleteLib('${x.id}')">Slet</button>
+                </div>
+            </div>
+        `).join('');
     }
+
+    const imageLibraryEmpEl = document.getElementById('imageLibraryEmployee');
+    if(imageLibraryEmpEl) {
+        imageLibraryEmpEl.innerHTML = empLib.map(x => `
+            <div class="image-box">
+                <img src="${xe(x.src)}">
+                <input value="${xe(x.name)}" onchange="renameLib('${x.id}',this.value)">
+                <div class="cms-actions">
+                    <button class="btn-small btn-danger" onclick="deleteLib('${x.id}')" style="flex:100%;">Slet billede</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Filtrerede Dropdowns
+    const optsSite = '<option value="">Intet billede</option>' + siteLib.map(x => `<option value="${xe(x.src)}">${xe(x.name)}</option>`).join('');
+    const optsEmp = '<option value="">Intet billede</option>' + empLib.map(x => `<option value="${xe(x.src)}">${xe(x.name)}</option>`).join('');
+
+    if (document.getElementById('svcImage')) document.getElementById('svcImage').innerHTML = optsSite;
+    if (document.getElementById('modImage')) document.getElementById('modImage').innerHTML = optsSite;
+    if (document.getElementById('empImage')) document.getElementById('empImage').innerHTML = optsEmp;
     
+    // Anvendelse af billeder på sitet
     let logo=document.getElementById('site-logo'),profile=document.getElementById('site-profile-pic'),hero=document.getElementById('forside');
     if (logo) {
         logo.src=libSrc(layout.logo)||logo.src;
