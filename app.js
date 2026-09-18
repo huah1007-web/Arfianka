@@ -2,7 +2,7 @@
 // FIREBASE INITIALISERING
 // =========================================================
 if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig); // Henter konfiguration fra config.js
+    firebase.initializeApp(firebaseConfig);
 }
 
 const db = firebase.firestore();
@@ -109,7 +109,7 @@ function changeLanguage(lang) {
     const elements = document.querySelectorAll("[data-i18n]");
     elements.forEach(el => {
         const key = el.getAttribute("data-i18n");
-        if (translations[lang] && translations[lang][key]) { // Henter fra lang.js
+        if (translations[lang] && translations[lang][key]) {
             el.innerText = translations[lang][key];
         }
     });
@@ -627,10 +627,14 @@ function saveModule(){let a=xget('arfianka_modules_plus',[]),id=+document.getEle
 function editModuleX(id){let x=xget('arfianka_modules_plus',[]).find(v=>v.id===id);if(!x)return;document.getElementById('modId').value=x.id;document.getElementById('modTitle').value=x.title;document.getElementById('modText').value=x.text;document.getElementById('modLink').value=x.link;document.getElementById('modImage').value=x.image;document.getElementById('modVisible').checked=x.visible}
 function clearModule(){document.getElementById('modId').value=document.getElementById('modTitle').value=document.getElementById('modText').value=document.getElementById('modLink').value=''}
 
+// OPDATERET: Tre kategorier for upload
 async function uploadLibraryImages(){
     if(!auth.currentUser)return alert('Please log in as administrator first.');
     const cat = document.getElementById('uploadCategory').value;
-    const uploadFolder = cat === 'employee' ? 'employees' : 'library';
+    
+    let uploadFolder = 'library';
+    if(cat === 'employee') uploadFolder = 'employees';
+    if(cat === 'service') uploadFolder = 'services';
     
     try{
         const added=[];
@@ -717,8 +721,10 @@ function renderExtendedCms(){
         modManagerEl.innerHTML=ms.map(x=>`<div class="cms-row"><span>${xe(x.title)} (${x.visible?'Visible':'Hidden'})</span><span><button class="btn-small" onclick="editModuleX(${x.id})">Edit</button><button class="btn-small" onclick="toggleX('arfianka_modules_plus',${x.id})">Show/Hide</button><button class="btn-small btn-danger" onclick="deleteX('arfianka_modules_plus',${x.id})">Delete</button></span></div>`).join('');
     }
 
+    // OPDATERET: Henter og opdeler nu tre billedkategorier
     const siteLib = lib.filter(x => !x.category || x.category === 'site');
     const empLib = lib.filter(x => x.category === 'employee');
+    const serviceLib = lib.filter(x => x.category === 'service'); 
     
     const imageLibrarySiteEl = document.getElementById('imageLibrarySite');
     if(imageLibrarySiteEl) {
@@ -749,11 +755,26 @@ function renderExtendedCms(){
         `).join('');
     }
 
+    const imageLibraryServiceEl = document.getElementById('imageLibraryService');
+    if(imageLibraryServiceEl) {
+        imageLibraryServiceEl.innerHTML = serviceLib.map(x => `
+            <div class="image-box">
+                <img src="${xe(x.src)}">
+                <input value="${xe(x.name)}" onchange="renameLib('${x.id}',this.value)">
+                <div class="cms-actions">
+                    <button class="btn-small btn-danger" onclick="deleteLib('${x.id}')" style="flex:100%;">Slet billede</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Filtrerede Dropdowns for hver sektion
     const optsSite = '<option value="">Intet billede</option>' + siteLib.map(x => `<option value="${xe(x.src)}">${xe(x.name)}</option>`).join('');
     const optsEmp = '<option value="">Intet billede</option>' + empLib.map(x => `<option value="${xe(x.src)}">${xe(x.name)}</option>`).join('');
+    const optsService = '<option value="">Intet billede</option>' + serviceLib.map(x => `<option value="${xe(x.src)}">${xe(x.name)}</option>`).join('');
 
-    if (document.getElementById('svcImage')) document.getElementById('svcImage').innerHTML = optsSite;
-    if (document.getElementById('modImage')) document.getElementById('modImage').innerHTML = optsSite;
+    if (document.getElementById('svcImage')) document.getElementById('svcImage').innerHTML = optsService; 
+    if (document.getElementById('modImage')) document.getElementById('modImage').innerHTML = optsService; 
     if (document.getElementById('empImage')) document.getElementById('empImage').innerHTML = optsEmp;
     
     let logo=document.getElementById('site-logo'),profile=document.getElementById('site-profile-pic'),hero=document.getElementById('forside');
