@@ -1,18 +1,8 @@
 // =========================================================
-// 1. FIREBASE INITIALIZATION & CONFIGURATION
+// FIREBASE INITIALISERING
 // =========================================================
-const firebaseConfig = {
-    apiKey: "AIzaSyDeKIZcW1Mvi4lYvaKRMOWdKk3ikFXwEAU",
-    authDomain: "huah-198fc.firebaseapp.com",
-    projectId: "huah-198fc",
-    storageBucket: "huah-198fc.firebasestorage.app",
-    messagingSenderId: "276648968284",
-    appId: "1:276648968284:web:029616d17546aa7d662699",
-    measurementId: "G-J8V7DB0DF7"
-};
-
 if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig); // Henter konfiguration fra config.js
 }
 
 const db = firebase.firestore();
@@ -113,44 +103,13 @@ function initEmailJS(){const c=getEmailConfig();if(window.emailjs&&c.publicKey)e
 initEmailJS();
 
 // =========================================================
-// 2. LANGUAGE SYSTEM
+// SPROG SYSTEM
 // =========================================================
-const translations = {
-    en: {
-        nav_home: "Home", nav_services: "Services", nav_about: "About Us", nav_book: "Book Meeting", nav_admin: "Admin",
-        hero_title: "Welcome to ArFiAnKA", hero_desc: "Professional home care and secure online meetings for the elderly, led with heart and high professionalism.",
-        hero_btn_book: "Book an online meeting", hero_btn_help: "See our services",
-        srv_title: "We help with everything", 
-        srv_1_title: "Online Safety Meeting", srv_1_desc: "A conversation via computer/tablet about health, well-being, or practical challenges.",
-        srv_2_title: "Practical & Personal Care", srv_2_desc: "Help with shopping, cooking, and personal hygiene with respect and dignity.",
-        srv_3_title: "Health Counseling", srv_3_desc: "Authorized assessment, medication management, and dialogue with the municipality/doctor.",
-        about_title: "Meet our CEO", 
-        book_title: "Book an online meeting / help", book_sub: "No login required. Fill out the form, and we will call you back.",
-        form_name: "Full Name", form_phone: "Phone Number", form_subject: "What is this regarding?",
-        form_opt_1: "Select...",
-        form_msg: "Additional message", form_btn: "Send Request"
-    },
-    sr: {
-        nav_home: "Početna", nav_services: "Usluge", nav_about: "O nama", nav_book: "Zakaži", nav_admin: "Admin",
-        hero_title: "Dobrodošli u ArFiAnKA", hero_desc: "Profesionalna kućna nega i sigurni onlajn sastanci za starije, vođeni srcem i visokom stručnošću.",
-        hero_btn_book: "Zakaži onlajn sastanak", hero_btn_help: "Naše usluge",
-        srv_title: "Pomažemo u svemu", 
-        srv_1_title: "Onlajn sastanak za sigurnost", srv_1_desc: "Razgovor preko računara/tableta o zdravlju, blagostanju ili praktičnim izazovima.",
-        srv_2_title: "Praktična i lična nega", srv_2_desc: "Pomoć pri kupovini, kuvanju i ličnoj higijeni sa poštovanjem i dostojanstvom.",
-        srv_3_title: "Zdravstveno savetovanje", srv_3_desc: "Ovlašćena procena, upravljanje lekovima i dijalog sa opštinom/lekarom.",
-        about_title: "Upoznajte našeg direktora", 
-        book_title: "Zakažite onlajn sastanak / pomoć", book_sub: "Nije potrebna prijava. Popunite formular i mi ćemo vas pozvati.",
-        form_name: "Puno ime", form_phone: "Broj telefona", form_subject: "O čemu se radi?",
-        form_opt_1: "Izaberite...",
-        form_msg: "Dodatna poruka", form_btn: "Pošalji zahtev"
-    }
-};
-
 function changeLanguage(lang) {
     const elements = document.querySelectorAll("[data-i18n]");
     elements.forEach(el => {
         const key = el.getAttribute("data-i18n");
-        if (translations[lang] && translations[lang][key]) {
+        if (translations[lang] && translations[lang][key]) { // Henter fra lang.js
             el.innerText = translations[lang][key];
         }
     });
@@ -168,7 +127,7 @@ function changeLanguage(lang) {
 }
 
 // =========================================================
-// 3. LOCAL CONTENT MANAGEMENT (CMS)
+// LOCAL CONTENT MANAGEMENT (CMS)
 // =========================================================
 let currentServices = ["Onlajn sastanak", "Praktična pomoć", "Lična nega"];
 
@@ -328,7 +287,7 @@ function renderClientDropdown() {
     if (!selectEl) return;
     const langSel = document.getElementById('languageSelector');
     const currentLang = langSel ? langSel.value : 'sr';
-    const selectPlaceholder = translations[currentLang]["form_opt_1"] || "Izaberite...";
+    const selectPlaceholder = translations[currentLang] ? translations[currentLang]["form_opt_1"] : "Izaberite...";
     
     selectEl.innerHTML = `<option value="">${selectPlaceholder}</option>`;
     
@@ -349,7 +308,7 @@ function deleteService(index){if(confirm(`Delete "${currentServices[index]}"? / 
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.target.id==='newServiceInput'||e.target.id==='newServicePrice')){e.preventDefault();addNewService();}});
 
 // =========================================================
-// 4. UI NAVIGATION
+// UI NAVIGATION
 // =========================================================
 function toggleMobileMenu() {
     const nav = document.getElementById('navLinks');
@@ -394,7 +353,7 @@ function switchAdminTab(tab){
 }
 
 // =========================================================
-// 5. FIREBASE INTEGRATED ACTIONS (Bookings & Auth)
+// FIREBASE INTEGRATED ACTIONS
 // =========================================================
 async function submitBooking(event) {
     event.preventDefault();
@@ -588,7 +547,6 @@ function moveX(k,id,d){let a=xget(k,[]),i=a.findIndex(x=>x.id===id),j=i+d;if(i>=
 function bookService(t){const s=document.getElementById('service'); if(s)s.value=t; const b=document.getElementById('book'); if(b)b.scrollIntoView({behavior:'smooth'})}
 function saveContactInfo(){xset('arfianka_contact_plus',{phone:document.getElementById('contactPhone').value,email:document.getElementById('contactEmail').value,address:document.getElementById('contactAddress').value,visible:document.getElementById('contactVisible').checked})}
 
-// Opdaterede Employee funktioner (Direkte upload fjernet)
 function updateEmployeePreview(){
     const empPreview = document.getElementById('empPreview');
     const empHeight = document.getElementById('empHeight').value;
@@ -669,7 +627,6 @@ function saveModule(){let a=xget('arfianka_modules_plus',[]),id=+document.getEle
 function editModuleX(id){let x=xget('arfianka_modules_plus',[]).find(v=>v.id===id);if(!x)return;document.getElementById('modId').value=x.id;document.getElementById('modTitle').value=x.title;document.getElementById('modText').value=x.text;document.getElementById('modLink').value=x.link;document.getElementById('modImage').value=x.image;document.getElementById('modVisible').checked=x.visible}
 function clearModule(){document.getElementById('modId').value=document.getElementById('modTitle').value=document.getElementById('modText').value=document.getElementById('modLink').value=''}
 
-// OPDATERET UPLOAD FUNKTION (Tilføjer Kategori)
 async function uploadLibraryImages(){
     if(!auth.currentUser)return alert('Please log in as administrator first.');
     const cat = document.getElementById('uploadCategory').value;
@@ -760,7 +717,6 @@ function renderExtendedCms(){
         modManagerEl.innerHTML=ms.map(x=>`<div class="cms-row"><span>${xe(x.title)} (${x.visible?'Visible':'Hidden'})</span><span><button class="btn-small" onclick="editModuleX(${x.id})">Edit</button><button class="btn-small" onclick="toggleX('arfianka_modules_plus',${x.id})">Show/Hide</button><button class="btn-small btn-danger" onclick="deleteX('arfianka_modules_plus',${x.id})">Delete</button></span></div>`).join('');
     }
 
-    // OPDATERING AF BILLED-BIBLIOTEK: Adskiller kategorier
     const siteLib = lib.filter(x => !x.category || x.category === 'site');
     const empLib = lib.filter(x => x.category === 'employee');
     
@@ -793,7 +749,6 @@ function renderExtendedCms(){
         `).join('');
     }
 
-    // Filtrerede Dropdowns
     const optsSite = '<option value="">Intet billede</option>' + siteLib.map(x => `<option value="${xe(x.src)}">${xe(x.name)}</option>`).join('');
     const optsEmp = '<option value="">Intet billede</option>' + empLib.map(x => `<option value="${xe(x.src)}">${xe(x.name)}</option>`).join('');
 
@@ -801,7 +756,6 @@ function renderExtendedCms(){
     if (document.getElementById('modImage')) document.getElementById('modImage').innerHTML = optsSite;
     if (document.getElementById('empImage')) document.getElementById('empImage').innerHTML = optsEmp;
     
-    // Anvendelse af billeder på sitet
     let logo=document.getElementById('site-logo'),profile=document.getElementById('site-profile-pic'),hero=document.getElementById('forside');
     if (logo) {
         logo.src=libSrc(layout.logo)||logo.src;
