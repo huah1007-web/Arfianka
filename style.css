@@ -238,13 +238,11 @@ img {
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(13,44,84,0.08);
-    /* Fikser layout bug: Sikrer at kassen ikke kollapser */
     align-items: stretch; 
 }
 
 .about-image {
     flex: 1 1 400px;
-    /* Fikser billed-bug: Background-size og position styres primært af admin-JS, men vi sætter en god fallback her */
     background-color: var(--primary-navy);
     background-repeat: no-repeat;
     min-height: 400px;
